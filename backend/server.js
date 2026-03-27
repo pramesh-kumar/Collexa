@@ -50,29 +50,104 @@ io.use((socket, next) => {
   }
 });
 
+const onlineUsers = new Map(); // userId -> socketId
+
 io.on("connection", (socket) => {
   console.log(`🔌 Connected: ${socket.userId}`);
   socket.join(socket.userId);
 
+  // Track online
+  onlineUsers.set(socket.userId, socket.id);
+  io.emit("userOnline", socket.userId);
+
+  // Send current online list to newly connected user
+  socket.emit("onlineList", Array.from(onlineUsers.keys()));
+
   socket.on("sendMessage", async ({ receiverId, text }) => {
+      try {
+        const matched = await isMatched(socket.userId, receiverId);
+        if (!matched) return socket.emit("error", "Not matched");
+
+        const message = await Message.create({
+          senderId: socket.userId,
+          receiverId,
+          type: "text",
+          text,
+        });
+
+        io.to(receiverId).emit("newMessage", message);
+        socket.emit("newMessage", message);
+      } catch (err) {
+        socket.emit("error", err.message);
+      }
+    });
+
+  // Mark messages as seen
+  socket.on("markSeen", async ({ senderId }) => {
     try {
-      const matched = await isMatched(socket.userId, receiverId);
-      if (!matched) return socket.emit("error", "Not matched");
-
-      const message = await Message.create({
-        senderId: socket.userId,
-        receiverId,
-        text,
-      });
-
-      io.to(receiverId).emit("newMessage", message);
-      socket.emit("newMessage", message);
+      await Message.updateMany(
+        { senderId, receiverId: socket.userId, seenBy: { $ne: socket.userId } },
+        { $addToSet: { seenBy: socket.userId } }
+      );
+      io.to(senderId).emit("messagesSeen", { by: socket.userId });
     } catch (err) {
-      socket.emit("error", err.message);
+      console.error(err);
     }
   });
 
-  socket.on("disconnect", () => console.log(`🔌 Disconnected: ${socket.userId}`));
+  // Delete message (single)
+  socket.on("deleteMessage", async ({ messageId, type }) => {
+    try {
+      const msg = await Message.findById(messageId);
+      if (!msg) return;
+      if (type === "everyone" && msg.senderId.toString() === socket.userId) {
+        await Message.findByIdAndUpdate(messageId, {
+          $addToSet: { deletedFor: [msg.senderId, msg.receiverId] },
+          text: "",
+        });
+        io.to(msg.receiverId.toString()).emit("messageDeleted", { messageId, type: "everyone" });
+        socket.emit("messageDeleted", { messageId, type: "everyone" });
+      } else {
+        await Message.findByIdAndUpdate(messageId, {
+          $addToSet: { deletedFor: socket.userId },
+        });
+        socket.emit("messageDeleted", { messageId, type: "me" });
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  });
+
+  // Delete multiple messages
+  socket.on("deleteMessages", async ({ messageIds, type }) => {
+    try {
+      for (const messageId of messageIds) {
+        const msg = await Message.findById(messageId);
+        if (!msg) continue;
+        if (type === "everyone" && msg.senderId.toString() === socket.userId) {
+          await Message.findByIdAndUpdate(messageId, {
+            $addToSet: { deletedFor: [msg.senderId, msg.receiverId] },
+            text: "",
+          });
+          io.to(msg.receiverId.toString()).emit("messageDeleted", { messageId, type: "everyone" });
+          socket.emit("messageDeleted", { messageId, type: "everyone" });
+        } else {
+          await Message.findByIdAndUpdate(messageId, {
+            $addToSet: { deletedFor: socket.userId },
+          });
+          socket.emit("messageDeleted", { messageId, type: "me" });
+        }
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  });
+
+  socket.on("disconnect", () => {
+    console.log(`🔌 Disconnected: ${socket.userId}`);
+    onlineUsers.delete(socket.userId);
+    io.emit("userOffline", socket.userId);
+  });
 });
 
 const PORT = process.env.PORT || 5000;

@@ -5,16 +5,8 @@ const SwipeCard = ({ profile, onSwipe }) => {
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [start, setStart] = useState(null);
 
-  const handleMouseDown = (e) => {
-    setDragging(true);
-    setStart({ x: e.clientX, y: e.clientY });
-  };
-
-  const handleMouseMove = (e) => {
-    if (!dragging) return;
-    setOffset({ x: e.clientX - start.x, y: e.clientY - start.y });
-  };
-
+  const handleMouseDown = (e) => { setDragging(true); setStart({ x: e.clientX, y: e.clientY }); };
+  const handleMouseMove = (e) => { if (!dragging) return; setOffset({ x: e.clientX - start.x, y: e.clientY - start.y }); };
   const handleMouseUp = () => {
     if (offset.x > 80) onSwipe("like");
     else if (offset.x < -80) onSwipe("pass");
@@ -28,7 +20,7 @@ const SwipeCard = ({ profile, onSwipe }) => {
 
   return (
     <div
-      className="absolute w-full select-none cursor-grab active:cursor-grabbing"
+      className="w-full select-none cursor-grab active:cursor-grabbing"
       style={{ transform: `translateX(${offset.x}px) translateY(${offset.y}px) rotate(${rotation}deg)`, transition: dragging ? "none" : "transform 0.3s ease" }}
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
@@ -36,10 +28,11 @@ const SwipeCard = ({ profile, onSwipe }) => {
       onMouseLeave={handleMouseUp}
     >
       <div className="bg-white rounded-3xl shadow-xl overflow-hidden">
+        {/* Fixed height image */}
         <div className="relative">
           <img
             src={profile.profilePhotos?.[0] || `https://ui-avatars.com/api/?name=${profile.name}&size=400&background=fda4af&color=fff`}
-            className="w-full h-96 object-cover"
+            className="w-full h-64 object-cover"
             alt={profile.name}
             draggable={false}
           />
@@ -54,9 +47,12 @@ const SwipeCard = ({ profile, onSwipe }) => {
             </div>
           )}
         </div>
-        <div className="p-5">
-          <h2 className="text-2xl font-bold text-gray-800">{profile.name}, {profile.age}</h2>
-          <p className="text-rose-500 font-medium">{profile.branch} • Year {profile.year}</p>
+
+        {/* Scrollable info — max height so it doesn't overflow */}
+        <div className="p-4 max-h-40 overflow-y-auto">
+          <h2 className="text-xl font-bold text-gray-800">{profile.name}, {profile.age}</h2>
+          <p className="text-rose-500 font-medium text-sm">{profile.branch} • Year {profile.year}</p>
+          {profile.course && <p className="text-gray-400 text-xs mt-0.5">{profile.course}</p>}
           {profile.bio && <p className="text-gray-500 text-sm mt-2">{profile.bio}</p>}
           {profile.interests?.length > 0 && (
             <div className="flex flex-wrap gap-2 mt-3">

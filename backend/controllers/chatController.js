@@ -1,5 +1,6 @@
 const Message = require("../models/Message");
 const Match = require("../models/Match");
+const { uploadChatFileToS3 } = require("../middleware/upload");
 
 const isMatched = async (userId, targetId) => {
   return Match.findOne({
@@ -14,7 +15,6 @@ const isMatched = async (userId, targetId) => {
 const getChatHistory = async (req, res, next) => {
   try {
     const { userId: targetId } = req.params;
-
     const matched = await isMatched(req.userId, targetId);
     if (!matched) return res.status(403).json({ success: false, message: "Not matched" });
 
@@ -23,6 +23,7 @@ const getChatHistory = async (req, res, next) => {
         { senderId: req.userId, receiverId: targetId },
         { senderId: targetId, receiverId: req.userId },
       ],
+      deletedFor: { $ne: req.userId },
     }).sort({ createdAt: 1 });
 
     res.json({ success: true, messages });
@@ -31,4 +32,57 @@ const getChatHistory = async (req, res, next) => {
   }
 };
 
-module.exports = { getChatHistory, isMatched };
+// POST /chat/:userId/upload
+const uploadChatFile = async (req, res, next) => {
+  try {
+    const { userId: targetId } = req.params;
+    const matched = await isMatched(req.userId, targetId);
+    if (!matched) return res.status(403).json({ success: false, message: "Not matched" });
+
+    const file = req.file;
+    const fileUrl = await uploadChatFileToS3(file);
+
+    let type = "file";
+    if (file.mimetype.startsWith("image/")) type = "image";
+    else if (file.mimetype.startsWith("audio/")) type = "audio";
+
+    const message = await Message.create({
+      senderId: req.userId,
+      receiverId: targetId,
+      type,
+      fileUrl,
+      fileName: file.originalname,
+      text: "",
+    });
+
+    res.json({ success: true, message });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// DELETE /chat/:userId/clear
+const clearChat = async (req, res, next) => {
+  try {
+    const { userId: targetId } = req.params;
+    const matched = await isMatched(req.userId, targetId);
+    if (!matched) return res.status(403).json({ success: false, message: "Not matched" });
+
+    await Message.updateMany(
+      {
+        $or: [
+          { senderId: req.userId, receiverId: targetId },
+          { senderId: targetId, receiverId: req.userId },
+        ],
+        deletedFor: { $ne: req.userId },
+      },
+      { $addToSet: { deletedFor: req.userId } }
+    );
+
+    res.json({ success: true });
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = { getChatHistory, uploadChatFile, clearChat, isMatched };

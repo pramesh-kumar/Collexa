@@ -38,7 +38,7 @@ const signup = async (req, res, next) => {
 // POST /auth/verify-otp
 const verifyOtp = async (req, res, next) => {
   try {
-    const { email, otp } = req.body;
+    const { email, otp, name, course, branch, year } = req.body;
 
     const user = await User.findOne({ email });
     if (!user) return res.status(404).json({ success: false, message: "User not found" });
@@ -50,6 +50,24 @@ const verifyOtp = async (req, res, next) => {
     user.otp = undefined;
     user.otpExpiresAt = undefined;
     await user.save();
+
+    // Auto-create profile if fields provided
+    if (name && branch && year) {
+      const Profile = require("../models/Profile");
+      const existing = await Profile.findOne({ userId: user._id });
+      if (!existing) {
+        await Profile.create({
+          userId: user._id,
+          name,
+          course: course || "",
+          branch,
+          year: Number(year),
+          age: 18,
+          bio: "",
+          interests: [],
+        });
+      }
+    }
 
     res.json({ success: true, message: "Email verified successfully" });
   } catch (err) {

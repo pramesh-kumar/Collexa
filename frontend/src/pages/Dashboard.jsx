@@ -71,7 +71,7 @@ const Dashboard = () => {
           </div>
         ) : (
           <>
-            <div className="relative h-[520px]">
+            <div className="relative">
               {users.slice(-3).map((user, i, arr) => (
                 <div
                   key={user._id}
@@ -81,10 +81,14 @@ const Dashboard = () => {
                   {i === arr.length - 1 ? (
                     <SwipeCard profile={user} onSwipe={handleSwipe} />
                   ) : (
-                    <div className="bg-white rounded-3xl shadow-md h-[520px]" />
+                    <div className="bg-white rounded-3xl shadow-md h-[420px]" />
                   )}
                 </div>
               ))}
+              {/* Invisible spacer to give height to relative container */}
+              <div className="invisible">
+                <SwipeCard profile={users[users.length - 1]} onSwipe={() => {}} />
+              </div>
             </div>
 
             <div className="flex justify-center gap-8 mt-6">

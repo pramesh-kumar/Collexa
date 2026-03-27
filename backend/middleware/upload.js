@@ -6,13 +6,19 @@ const { v4: uuidv4 } = require("crypto").webcrypto ?
   require("crypto");
 
 const storage = multer.memoryStorage();
+
 const upload = multer({
   storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+  limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     if (file.mimetype.startsWith("image/")) cb(null, true);
     else cb(new Error("Only image files allowed"));
   },
+});
+
+const chatUpload = multer({
+  storage,
+  limits: { fileSize: 20 * 1024 * 1024 }, // 20MB for chat files
 });
 
 const uploadToS3 = async (file) => {
@@ -26,4 +32,15 @@ const uploadToS3 = async (file) => {
   return `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`;
 };
 
-module.exports = { upload, uploadToS3 };
+const uploadChatFileToS3 = async (file) => {
+  const key = `chat/${require("crypto").randomUUID()}-${file.originalname}`;
+  await s3.send(new PutObjectCommand({
+    Bucket: process.env.S3_BUCKET_NAME,
+    Key: key,
+    Body: file.buffer,
+    ContentType: file.mimetype,
+  }));
+  return `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`;
+};
+
+module.exports = { upload, chatUpload, uploadToS3, uploadChatFileToS3 };

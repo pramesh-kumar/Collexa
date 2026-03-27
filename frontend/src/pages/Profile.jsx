@@ -8,7 +8,7 @@ const BRANCHES = ["CSE", "ECE", "ME", "CE", "EE", "EP", "DS"];
 const YEARS = [1, 2, 3, 4, 5];
 
 const Profile = () => {
-  const [form, setForm] = useState({ name: "", age: "", branch: "", year: "", bio: "", interests: "" });
+  const [form, setForm] = useState({ name: "", age: "", course: "", branch: "", year: "", bio: "", interests: "" });
   const [photos, setPhotos] = useState([]);
   const [existing, setExisting] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -21,6 +21,7 @@ const Profile = () => {
         setForm({
           name: data.profile.name,
           age: data.profile.age,
+          course: data.profile.course || "",
           branch: data.profile.branch,
           year: data.profile.year,
           bio: data.profile.bio,
@@ -71,7 +72,7 @@ const Profile = () => {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {[["name", "Name"], ["age", "Age", "number"], ["bio", "Bio"]].map(([key, label, type = "text"]) => (
+          {[["name", "Name"], ["age", "Age", "number"], ["course", "Course Name"], ["bio", "Bio"]].map(([key, label, type = "text"]) => (
             <input
               key={key}
               type={type}

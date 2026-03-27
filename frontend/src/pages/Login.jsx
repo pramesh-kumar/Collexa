@@ -29,7 +29,7 @@ const Login = () => {
     <div className="min-h-screen bg-gradient-to-br from-rose-50 to-pink-100 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-lg p-8 w-full max-w-md">
         <h1 className="text-3xl font-bold text-rose-500 text-center mb-2">💘 Collexa</h1>
-        <p className="text-center text-gray-500 mb-6">IIT Mandi's dating app</p>
+        <p className="text-center text-gray-500 mb-6">Where IITians connect...</p>
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
             type="email"
