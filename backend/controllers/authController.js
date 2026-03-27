@@ -52,7 +52,7 @@ const verifyOtp = async (req, res, next) => {
     await user.save();
 
     // Auto-create profile if fields provided
-    if (name && branch && year) {
+    if (name && branch && year && !isNaN(Number(year))) {
       const Profile = require("../models/Profile");
       const existing = await Profile.findOne({ userId: user._id });
       if (!existing) {
