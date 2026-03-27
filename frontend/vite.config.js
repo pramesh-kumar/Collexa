@@ -6,12 +6,10 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
     proxy: {
-      "/auth": "http://localhost:5000",
-      "/profile": "http://localhost:5000",
-      "/users": "http://localhost:5000",
-      "/swipe": "http://localhost:5000",
-      "/matches": "http://localhost:5000",
-      "/chat": "http://localhost:5000",
+      "/api": {
+        target: "http://localhost:5000",
+        rewrite: (path) => path.replace(/^\/api/, ""),
+      },
     },
   },
 });

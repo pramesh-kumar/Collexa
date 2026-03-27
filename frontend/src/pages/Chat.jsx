@@ -26,7 +26,7 @@ const Chat = () => {
       .then(({ data }) => setMessages(data.messages))
       .catch(() => toast.error("Failed to load chat"));
 
-    socket = io("/", { auth: { token } });
+    socket = io(import.meta.env.VITE_SOCKET_URL || "/", { path: "/api/socket.io", auth: { token } });
     socket.on("newMessage", (msg) => setMessages((prev) => [...prev, msg]));
     socket.on("error", (err) => toast.error(err));
 
