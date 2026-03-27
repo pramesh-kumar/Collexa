@@ -1,0 +1,135 @@
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
+import api from "../utils/api";
+import Navbar from "../components/Navbar";
+
+const BRANCHES = ["CSE", "ECE", "ME", "CE", "EE", "EP", "DS"];
+const YEARS = [1, 2, 3, 4, 5];
+
+const Profile = () => {
+  const [form, setForm] = useState({ name: "", age: "", branch: "", year: "", bio: "", interests: "" });
+  const [photos, setPhotos] = useState([]);
+  const [existing, setExisting] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    api.get("/profile/me").then(({ data }) => {
+      if (data.profile) {
+        setExisting(data.profile);
+        setForm({
+          name: data.profile.name,
+          age: data.profile.age,
+          branch: data.profile.branch,
+          year: data.profile.year,
+          bio: data.profile.bio,
+          interests: data.profile.interests.join(", "),
+        });
+      }
+    }).catch(() => {});
+  }, []);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const fd = new FormData();
+      Object.entries(form).forEach(([k, v]) => {
+        if (k === "interests") fd.append(k, JSON.stringify(v.split(",").map((i) => i.trim()).filter(Boolean)));
+        else fd.append(k, v);
+      });
+      photos.forEach((p) => fd.append("photos", p));
+
+      if (existing) {
+        await api.put("/profile/update", fd);
+        toast.success("Profile updated!");
+      } else {
+        await api.post("/profile/create", fd);
+        toast.success("Profile created!");
+        navigate("/dashboard");
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Navbar />
+      <div className="max-w-lg mx-auto p-6">
+        <h2 className="text-2xl font-bold text-gray-800 mb-6">{existing ? "Edit Profile" : "Create Profile"}</h2>
+
+        {existing?.profilePhotos?.length > 0 && (
+          <div className="flex gap-2 mb-4 flex-wrap">
+            {existing.profilePhotos.map((url, i) => (
+              <img key={i} src={url} className="w-20 h-20 rounded-xl object-cover" alt="photo" />
+            ))}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {[["name", "Name"], ["age", "Age", "number"], ["bio", "Bio"]].map(([key, label, type = "text"]) => (
+            <input
+              key={key}
+              type={type}
+              placeholder={label}
+              className="w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-rose-300"
+              value={form[key]}
+              onChange={(e) => setForm({ ...form, [key]: e.target.value })}
+              required={key !== "bio"}
+            />
+          ))}
+
+          <select
+            className="w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-rose-300"
+            value={form.branch}
+            onChange={(e) => setForm({ ...form, branch: e.target.value })}
+            required
+          >
+            <option value="">Select Branch</option>
+            {BRANCHES.map((b) => <option key={b}>{b}</option>)}
+          </select>
+
+          <select
+            className="w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-rose-300"
+            value={form.year}
+            onChange={(e) => setForm({ ...form, year: e.target.value })}
+            required
+          >
+            <option value="">Select Year</option>
+            {YEARS.map((y) => <option key={y}>{y}</option>)}
+          </select>
+
+          <input
+            type="text"
+            placeholder="Interests (comma separated)"
+            className="w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-rose-300"
+            value={form.interests}
+            onChange={(e) => setForm({ ...form, interests: e.target.value })}
+          />
+
+          <input
+            type="file"
+            accept="image/*"
+            multiple
+            className="w-full border rounded-xl px-4 py-3"
+            onChange={(e) => setPhotos([...e.target.files])}
+          />
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-rose-500 text-white py-3 rounded-xl font-semibold hover:bg-rose-600 disabled:opacity-50 transition"
+          >
+            {loading ? "Saving..." : existing ? "Update Profile" : "Create Profile"}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+export default Profile;
