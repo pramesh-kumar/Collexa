@@ -33,7 +33,8 @@ const uploadToS3 = async (file) => {
 };
 
 const uploadChatFileToS3 = async (file) => {
-  const key = `chat/${require("crypto").randomUUID()}-${file.originalname}`;
+  const ext = file.originalname.split(".").pop().replace(/[^a-zA-Z0-9]/g, "") || "bin";
+  const key = `chat/${require("crypto").randomUUID()}.${ext}`;
   await s3.send(new PutObjectCommand({
     Bucket: process.env.S3_BUCKET_NAME,
     Key: key,
