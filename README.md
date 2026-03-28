@@ -1,80 +1,85 @@
 # 💘 Collexa
 
-A dating app built exclusively for IIT Mandi students.
-Live at — https://collexa.online
+A campus dating app exclusively for IIT Mandi students.  
+🌐 Live: https://collexa.online  
 
 ---
 
-## What is this?
+## 🚀 Overview
 
-Collexa is a campus dating app where IIT students can discover, match, and chat with each other. Only `iitmandi.ac.in` email addresses are allowed.
-
----
-
-## Stack
-
-- **Frontend** — React + Vite + Tailwind CSS
-- **Backend** — Node.js + Express.js
-- **Database** — MongoDB Atlas
-- **Storage** — AWS S3 (photos, files, voice messages)
-- **Real-time** — Socket.IO
-- **Auth** — JWT + Email OTP
-- **Deployment** — AWS EC2 + Nginx + PM2 + SSL
+Collexa allows IIT Mandi students to discover, match, and chat securely using their institute email (`@iitmandi.ac.in`).
 
 ---
 
-## Features
+## 🛠 Tech Stack
 
-- Swipe to like or pass on profiles
-- Match when both users like each other
-- Real-time chat with emoji, images, files, voice messages
-- Message seen ticks ✓✓
-- Delete messages — for me or for everyone
-- Multi-select messages for bulk delete
-- Clear chat
-- Block / Unblock users
-- Online / Offline status
-- In-app + browser push notifications with sound
-- Profile with photos, bio, interests, course, branch, year
-- View other user's profile
-- Terms & Conditions on signup
+- **Frontend:** React + Vite + Tailwind CSS  
+- **Backend:** Node.js + Express.js  
+- **Database:** MongoDB Atlas  
+- **Storage:** AWS S3  
+- **Real-time:** Socket.IO  
+- **Auth:** JWT + Email OTP  
+- **Deployment:** AWS EC2 + Nginx + PM2 + SSL  
 
 ---
 
-## Project Structure
+## ✨ Features
 
+- Swipe (Like / Pass)  
+- Match system (mutual likes)  
+- Real-time chat (text, emoji, images, files, voice)  
+- Seen ticks (✓✓)  
+- Delete messages (me / everyone)  
+- Bulk delete & clear chat  
+- Block / Unblock users  
+- Online / Offline status  
+- Push notifications (in-app + browser)  
+- User profiles (photos, bio, interests, course, branch, year)  
+
+---
+
+## 📁 Project Structure
+
+```
 Collexa/
 ├── backend/
-│ ├── config/ db, mailer, s3
-│ ├── controllers/ auth, profile, user, swipe, match, chat
-│ ├── models/ User, Profile, Swipe, Match, Message
-│ ├── routes/ auth, profile, users, swipe, matches, chat
-│ ├── middleware/ auth, logger, errorHandler, upload
-│ └── server.js
+│   ├── config/
+│   ├── controllers/
+│   ├── models/
+│   ├── routes/
+│   ├── middleware/
+│   └── server.js
 └── frontend/
-└── src/
-├── pages/ Login, Signup, Dashboard, Matches, Chat, Profile, BlockedUsers, UserProfile
-├── components/ Navbar, SwipeCard, ProtectedRoute, Footer, ConfirmToast
-├── context/ AuthContext, SocketContext
-└── utils/ api.js
-
+    └── src/
+        ├── pages/
+        ├── components/
+        ├── context/
+        └── utils/
+```
 
 ---
 
-## Local Setup
+## ⚙️ Local Setup
 
-**Backend**
+### Backend
+
+```bash
 cd backend
 npm install
-# create .env (see .env.example)
+# create .env (refer .env.example)
 node server.js
+```
 
+### Frontend
 
-**Frontend**
-
+```bash
 cd frontend
 npm install
-# create .env → VITE_SOCKET_URL=http://localhost:5000
+# create .env
+# VITE_SOCKET_URL=http://localhost:5000
 npm run dev
+```
 
-Built with 💘 by Pramesh
+---
+
+Built with 💘 by **Pramesh**
