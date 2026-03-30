@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { io } from "socket.io-client";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { useAuth } from "./AuthContext";
 
@@ -44,10 +44,8 @@ export const SocketProvider = ({ children }) => {
   const { token } = useAuth();
   const socketRef = useRef(null);
   const [onlineUsers, setOnlineUsers] = useState(new Set());
-  // matchProfiles: Map<userId, name> — for notification sender name lookup
   const matchProfilesRef = useRef({});
   const navigate = useNavigate();
-  const location = useLocation();
 
   // Request permission on mount
   useEffect(() => { requestNotificationPermission(); }, []);
@@ -60,17 +58,6 @@ export const SocketProvider = ({ children }) => {
       return;
     }
 
-    // Fetch match profiles for name lookup
-    fetch("/api/matches", { headers: { Authorization: `Bearer ${token}` } })
-      .then((r) => r.json())
-      .then(({ matches }) => {
-        if (!matches) return;
-        const map = {};
-        matches.forEach((m) => { map[m.userId?.toString()] = m.name; });
-        matchProfilesRef.current = map;
-      })
-      .catch(() => {});
-
     const socket = io(import.meta.env.VITE_SOCKET_URL || "http://localhost:5000", {
       path: "/api/socket.io",
       auth: { token },
@@ -80,16 +67,23 @@ export const SocketProvider = ({ children }) => {
     socket.on("userOnline", (id) => setOnlineUsers((prev) => new Set([...prev, id])));
     socket.on("userOffline", (id) => setOnlineUsers((prev) => { const s = new Set(prev); s.delete(id); return s; }));
 
-    socket.on("newMessage", (msg) => {
+    socket.on("newMessage", async (msg) => {
       const senderId = msg.senderId?.toString?.() || msg.senderId;
       const currentPath = window.location.pathname;
       const isInChat = currentPath === `/chat/${senderId}`;
-
-      // Don't notify if already in that chat or if I sent it
       const myId = JSON.parse(atob(token.split(".")[1])).userId;
       if (isInChat || senderId === myId) return;
 
-      const senderName = matchProfilesRef.current[senderId] || "Someone";
+      // Get name from cache or fetch it
+      if (!matchProfilesRef.current[senderId]) {
+        try {
+          const r = await fetch(`/api/users/profile/${senderId}`, { headers: { Authorization: `Bearer ${token}` } });
+          const { profile } = await r.json();
+          if (profile?.name) matchProfilesRef.current[senderId] = profile.name;
+        } catch {}
+      }
+
+      const displayName = matchProfilesRef.current[senderId] || "Someone";
       const preview = msg.type === "text"
         ? msg.text?.slice(0, 50)
         : msg.type === "image" ? "📷 Image"
@@ -98,17 +92,16 @@ export const SocketProvider = ({ children }) => {
 
       const goToChat = () => navigate(`/chat/${senderId}`);
 
-      // Tab visible → in-app toast
       if (document.visibilityState === "visible") {
         playNotificationSound();
         toast(
           (t) => (
             <div className="flex items-center gap-3 cursor-pointer" onClick={() => { toast.dismiss(t.id); goToChat(); }}>
               <div className="w-8 h-8 rounded-full bg-rose-100 flex items-center justify-center text-rose-500 font-bold text-sm shrink-0">
-                {senderName[0]?.toUpperCase()}
+                {displayName[0]?.toUpperCase()}
               </div>
               <div>
-                <p className="text-sm font-semibold text-gray-800">{senderName}</p>
+                <p className="text-sm font-semibold text-gray-800">{displayName}</p>
                 <p className="text-xs text-gray-500 truncate max-w-[180px]">{preview}</p>
               </div>
             </div>
@@ -116,9 +109,8 @@ export const SocketProvider = ({ children }) => {
           { duration: 4000 }
         );
       } else {
-        // Tab hidden → browser push notification
         playNotificationSound();
-        showBrowserNotification(`💬 ${senderName}`, preview, goToChat);
+        showBrowserNotification(`💬 ${displayName}`, preview, goToChat);
       }
     });
 

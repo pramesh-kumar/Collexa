@@ -81,12 +81,11 @@ const Dashboard = () => {
                   {i === arr.length - 1 ? (
                     <SwipeCard profile={user} onSwipe={handleSwipe} />
                   ) : (
-                    <div className="bg-white rounded-3xl shadow-md h-[420px]" />
+                    <div className="bg-white rounded-3xl shadow-md" style={{ height: "100%" }} />
                   )}
                 </div>
               ))}
-              {/* Invisible spacer to give height to relative container */}
-              <div className="invisible">
+              <div className="invisible pointer-events-none">
                 <SwipeCard profile={users[users.length - 1]} onSwipe={() => {}} />
               </div>
             </div>
