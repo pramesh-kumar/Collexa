@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import api from "../utils/api";
+import toast from "react-hot-toast";
 
 const NAV_LINKS = [
   { to: "/dashboard", label: "Discover" },
@@ -17,6 +19,25 @@ const Navbar = () => {
   const handleLogout = () => {
     logout();
     navigate("/login");
+  };
+
+  const [deleteConfirm, setDeleteConfirm] = useState(false);
+
+  const handleDeleteAccount = async () => {
+    if (!deleteConfirm) {
+      setDeleteConfirm(true);
+      toast("Double Tap To Delete Account", { icon: "⚠️", duration: 4000 });
+      setTimeout(() => setDeleteConfirm(false), 4000);
+      return;
+    }
+    try {
+      await api.delete("/auth/account");
+      logout();
+      toast.success("Account deleted");
+      navigate("/login");
+    } catch {
+      toast.error("Failed to delete account");
+    }
   };
 
   return (
@@ -57,6 +78,12 @@ const Navbar = () => {
         >
           Logout
         </button>
+        <button
+          onClick={handleDeleteAccount}
+          className="text-sm font-medium text-red-500 hover:text-red-600 transition-colors"
+        >
+          Delete Account
+        </button>
       </div>
 
       {/* Mobile: hamburger for logout */}
@@ -79,9 +106,15 @@ const Navbar = () => {
             </Link>
             <button
               onClick={handleLogout}
-              className="w-full text-left px-4 py-3 text-sm font-medium text-rose-500 hover:text-rose-600"
+              className="w-full text-left px-4 py-3 text-sm font-medium text-rose-500 hover:text-rose-600 border-b border-gray-100"
             >
               Logout
+            </button>
+            <button
+              onClick={() => { setOpen(false); handleDeleteAccount(); }}
+              className="w-full text-left px-4 py-3 text-sm font-medium text-red-500 hover:text-red-600"
+            >
+              Delete Account
             </button>
           </div>
         )}

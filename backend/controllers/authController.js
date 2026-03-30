@@ -1,6 +1,10 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
+const Profile = require("../models/Profile");
+const Swipe = require("../models/Swipe");
+const Match = require("../models/Match");
+const Message = require("../models/Message");
 const { sendOTP } = require("../config/mailer");
 
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
@@ -51,9 +55,7 @@ const verifyOtp = async (req, res, next) => {
     user.otpExpiresAt = undefined;
     await user.save();
 
-    // Auto-create profile if fields provided
     if (name && branch && year && !isNaN(Number(year))) {
-      const Profile = require("../models/Profile");
       const existing = await Profile.findOne({ userId: user._id });
       if (!existing) {
         await Profile.create({
@@ -95,4 +97,23 @@ const login = async (req, res, next) => {
   }
 };
 
-module.exports = { signup, verifyOtp, login };
+// DELETE /auth/account
+const deleteAccount = async (req, res, next) => {
+  try {
+    const userId = req.userId;
+
+    await Promise.all([
+      User.findByIdAndDelete(userId),
+      Profile.findOneAndDelete({ userId }),
+      Swipe.deleteMany({ $or: [{ userId }, { targetUserId: userId }] }),
+      Match.deleteMany({ $or: [{ user1: userId }, { user2: userId }] }),
+      Message.deleteMany({ $or: [{ senderId: userId }, { receiverId: userId }] }),
+    ]);
+
+    res.json({ success: true, message: "Account deleted" });
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = { signup, verifyOtp, login, deleteAccount };
