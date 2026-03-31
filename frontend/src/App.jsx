@@ -11,6 +11,7 @@ import Dashboard from "./pages/Dashboard";
 import Matches from "./pages/Matches";
 import Chat from "./pages/Chat";
 import BlockedUsers from "./pages/BlockedUsers";
+import ForgotPassword from "./pages/ForgotPassword";
 import UserProfile from "./pages/UserProfile";
 
 const AppContent = () => {
@@ -23,6 +24,7 @@ const AppContent = () => {
         <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
         <Route path="/matches" element={<ProtectedRoute><Matches /></ProtectedRoute>} />

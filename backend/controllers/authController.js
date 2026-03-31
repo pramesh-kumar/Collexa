@@ -14,7 +14,7 @@ const signup = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
-    if (!email.includes("iitmandi.ac.in"))
+    if (!email.endsWith("@iitmandi.ac.in"))
       return res.status(400).json({ success: false, message: "Only IIT Mandi email addresses are allowed" });
 
     const existing = await User.findOne({ email });
@@ -133,4 +133,41 @@ const getMyKeys = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
-module.exports = { signup, verifyOtp, login, deleteAccount, saveKeys, getMyKeys };
+// POST /auth/forgot-password
+const forgotPassword = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ email, isVerified: true });
+    if (!user) return res.status(404).json({ success: false, message: "No verified account found" });
+
+    const otp = generateOTP();
+    user.otp = otp;
+    user.otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
+    await user.save();
+
+    await sendOTP(email, otp);
+    if (process.env.NODE_ENV === "development") console.log(`🔑 DEV Reset OTP for ${email}: ${otp}`);
+    res.json({ success: true, message: "OTP sent to your email" });
+  } catch (err) { next(err); }
+};
+
+// POST /auth/reset-password
+const resetPassword = async (req, res, next) => {
+  try {
+    const { email, otp, newPassword } = req.body;
+    const user = await User.findOne({ email, isVerified: true });
+    if (!user) return res.status(404).json({ success: false, message: "User not found" });
+
+    if (user.otp !== otp || user.otpExpiresAt < new Date())
+      return res.status(400).json({ success: false, message: "Invalid or expired OTP" });
+
+    user.password = await bcrypt.hash(newPassword, 10);
+    user.otp = undefined;
+    user.otpExpiresAt = undefined;
+    await user.save();
+
+    res.json({ success: true, message: "Password reset successfully" });
+  } catch (err) { next(err); }
+};
+
+module.exports = { signup, verifyOtp, login, deleteAccount, saveKeys, getMyKeys, forgotPassword, resetPassword };
