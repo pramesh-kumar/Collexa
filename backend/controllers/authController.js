@@ -42,7 +42,7 @@ const signup = async (req, res, next) => {
 // POST /auth/verify-otp
 const verifyOtp = async (req, res, next) => {
   try {
-    const { email, otp, name, course, branch, year } = req.body;
+    const { email, otp, name, course, branch, year, age } = req.body;
 
     const user = await User.findOne({ email });
     if (!user) return res.status(404).json({ success: false, message: "User not found" });
@@ -64,7 +64,7 @@ const verifyOtp = async (req, res, next) => {
           course: course || "",
           branch,
           year: Number(year),
-          age: 18,
+          age: age ? Number(age) : 18,
           bio: "",
           interests: [],
         });

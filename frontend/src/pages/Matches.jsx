@@ -52,37 +52,42 @@ const Matches = () => {
             <p className="text-gray-500">No matches yet. Keep swiping!</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
             {matches.map((m) => (
               <div
                 key={m._id}
                 onClick={() => navigate(`/chat/${m.userId}`)}
-                className="bg-white rounded-2xl shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition relative"
+                className="bg-white rounded-2xl shadow-sm flex items-center gap-3 px-4 py-3 cursor-pointer hover:shadow-md transition relative"
               >
-                <div className="relative">
-                <img
-                  src={m.profilePhotos?.[0] || `https://ui-avatars.com/api/?name=${m.name}&size=200&background=fda4af&color=fff`}
-                  className="w-full h-40 object-cover"
-                  alt={m.name}
-                />
-                {onlineUsers.has(m.userId?.toString()) && (
-                  <span className="absolute bottom-2 left-2 w-3 h-3 bg-green-400 rounded-full border-2 border-white" />
-                )}
+                {/* Avatar */}
+                <div className="relative shrink-0">
+                  <img
+                    src={m.profilePhotos?.[0] || `https://ui-avatars.com/api/?name=${m.name}&size=100&background=fda4af&color=fff`}
+                    className="w-14 h-14 rounded-full object-cover"
+                    alt={m.name}
+                  />
+                  {onlineUsers.has(m.userId?.toString()) && (
+                    <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-400 rounded-full border-2 border-white" />
+                  )}
                 </div>
+
+                {/* Info */}
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-gray-800 truncate">{m.name}, {m.age}</p>
+                  <p className="text-xs text-rose-500 truncate">{m.branch} • Year {m.year}</p>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); navigate(`/user/${m.userId}`); }}
+                    className="text-xs text-rose-500 hover:text-rose-600 mt-0.5 font-medium">View Profile →</button>
+                </div>
+
+                {/* Remove */}
                 <button
                   onClick={(e) => handleRemove(e, m.userId)}
-                  className="absolute top-2 right-2 bg-white/80 hover:bg-red-100 text-red-500 rounded-full w-7 h-7 flex items-center justify-center text-sm shadow transition"
+                  className="shrink-0 text-gray-500 hover:text-red-500 transition text-lg font-bold"
                   title="Remove match"
                 >
                   ✕
                 </button>
-                <div className="p-3">
-                  <p className="font-semibold text-gray-800">{m.name}, {m.age}</p>
-                  <p className="text-xs text-rose-500">{m.branch} • Year {m.year}</p>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); navigate(`/user/${m.userId}`); }}
-                    className="text-xs text-rose-500 hover:text-rose-600 mt-1 font-medium">View Profile →</button>
-                </div>
               </div>
             ))}
           </div>

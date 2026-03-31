@@ -3,9 +3,10 @@ import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import api from "../utils/api";
 import Navbar from "../components/Navbar";
+import StreamDropdown from "../components/StreamDropdown";
+import YearDropdown from "../components/YearDropdown";
 
-const BRANCHES = ["CSE", "ECE", "ME", "CE", "EE", "EP", "DS"];
-const YEARS = [1, 2, 3, 4, 5];
+const STREAMS = ["CSE","IT","AI","DSE","ECE","EEE","EE","ME","CE","CHE","VLSI","PED","EP","AE","BME","BT","MET","PHYSICS","CHEMISTRY","BIO","MATH"];
 
 const Profile = () => {
   const [form, setForm] = useState({ name: "", age: "", course: "", branch: "", year: "", bio: "", interests: "" });
@@ -84,26 +85,8 @@ const Profile = () => {
             />
           ))}
 
-          <select
-            className="w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-rose-300"
-            value={form.branch}
-            onChange={(e) => setForm({ ...form, branch: e.target.value })}
-            required
-          >
-            <option value="">Select Branch</option>
-            {BRANCHES.map((b) => <option key={b}>{b}</option>)}
-          </select>
-
-          <select
-            className="w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-rose-300"
-            value={form.year}
-            onChange={(e) => setForm({ ...form, year: e.target.value })}
-            required
-          >
-            <option value="">Select Year</option>
-            {YEARS.map((y) => <option key={y}>{y}</option>)}
-          </select>
-
+          <StreamDropdown value={form.branch} onChange={(v) => setForm({ ...form, branch: v })} placeholder="Select Stream" required />
+          <YearDropdown value={form.year} onChange={(v) => setForm({ ...form, year: v })} required />
           <input
             type="text"
             placeholder="Interests (comma separated)"

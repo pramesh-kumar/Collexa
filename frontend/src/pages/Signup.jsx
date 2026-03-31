@@ -2,13 +2,12 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import api from "../utils/api";
-
-const BRANCHES = ["CSE", "ECE", "ME", "CE", "EE", "EP", "DS"];
-const YEARS = [1, 2, 3, 4, 5];
+import StreamDropdown from "../components/StreamDropdown";
+import YearDropdown from "../components/YearDropdown";
 
 const Signup = () => {
   const [step, setStep] = useState(1);
-  const [form, setForm] = useState({ email: "", password: "", name: "", course: "", branch: "", year: "" });
+  const [form, setForm] = useState({ email: "", password: "", name: "", course: "", branch: "", year: "", age: "" });
   const [otp, setOtp] = useState("");
   const [agreed, setAgreed] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
@@ -38,7 +37,7 @@ const Signup = () => {
     try {
       await api.post("/auth/verify-otp", {
         email: form.email, otp,
-        name: form.name, course: form.course, branch: form.branch, year: form.year,
+        name: form.name, course: form.course, branch: form.branch, year: form.year, age: form.age,
       });
       toast.success("Email verified! Please login.");
       navigate("/login");
@@ -79,20 +78,17 @@ const Signup = () => {
               className="w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-rose-300"
               value={form.course} onChange={(e) => set("course", e.target.value)} />
 
-            {/* Branch + Year */}
+            {/* Stream */}
+            <StreamDropdown value={form.branch} onChange={(v) => set("branch", v)} placeholder="Stream" required />
+
+            {/* Year + Age */}
             <div className="flex gap-3">
-              <select required
-                className="flex-1 border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-rose-300"
-                value={form.branch} onChange={(e) => set("branch", e.target.value)}>
-                <option value="">Branch</option>
-                {BRANCHES.map((b) => <option key={b}>{b}</option>)}
-              </select>
-              <select required
-                className="flex-1 border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-rose-300"
-                value={form.year} onChange={(e) => set("year", e.target.value)}>
-                <option value="">Year</option>
-                {YEARS.map((y) => <option key={y} value={y}>Year {y}</option>)}
-              </select>
+              <div className="flex-1">
+                <YearDropdown value={form.year} onChange={(v) => set("year", v)} required />
+              </div>
+              <input type="number" placeholder="Age" min={16} max={40} required
+                className="flex-1 border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-rose-300"
+                value={form.age} onChange={(e) => set("age", e.target.value)} />
             </div>
 
             {/* T&C */}

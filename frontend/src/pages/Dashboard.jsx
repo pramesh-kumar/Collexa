@@ -3,6 +3,11 @@ import toast from "react-hot-toast";
 import api from "../utils/api";
 import Navbar from "../components/Navbar";
 import SwipeCard from "../components/SwipeCard";
+import StreamDropdown from "../components/StreamDropdown";
+import YearDropdown from "../components/YearDropdown";
+
+const STREAMS = ["CSE","IT","AI","DSE","ECE","EEE","EE","ME","CE","CHE","VLSI","PED","EP","AE","BME","BT","MET","PHYSICS","CHEMISTRY","BIO","MATH"];
+const YEARS = [1, 2, 3, 4, 5];
 
 const Dashboard = () => {
   const [users, setUsers] = useState([]);
@@ -43,22 +48,12 @@ const Dashboard = () => {
       <Navbar />
       <div className="max-w-md mx-auto p-4">
         <div className="flex gap-3 mb-6">
-          <select
-            className="flex-1 border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-300"
-            value={filters.branch}
-            onChange={(e) => setFilters({ ...filters, branch: e.target.value })}
-          >
-            <option value="">All Branches</option>
-            {["CSE", "ECE", "ME", "CE", "EE", "EP", "DS"].map((b) => <option key={b}>{b}</option>)}
-          </select>
-          <select
-            className="flex-1 border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-300"
-            value={filters.year}
-            onChange={(e) => setFilters({ ...filters, year: e.target.value })}
-          >
-            <option value="">All Years</option>
-            {[1, 2, 3, 4, 5].map((y) => <option key={y}>Year {y}</option>)}
-          </select>
+          <div className="flex-1">
+            <StreamDropdown value={filters.branch} onChange={(v) => setFilters({ ...filters, branch: v })} placeholder="All Streams" />
+          </div>
+          <div className="flex-1">
+            <YearDropdown value={filters.year} onChange={(v) => setFilters({ ...filters, year: v })} placeholder="All Years" allOption />
+          </div>
         </div>
 
         {loading ? (
