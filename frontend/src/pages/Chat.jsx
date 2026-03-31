@@ -185,9 +185,9 @@ const Chat = () => {
 
     const onNewMessage = async (msg) => {
       let decryptedMsg = msg;
+      const senderId = msg.senderId?.toString?.() || msg.senderId;
       if (msg.type === "text" && msg.text) {
-        if (msg.senderId === myId && msg.plainText) {
-          // Sender sees plain text directly
+        if (senderId === myId && msg.plainText) {
           decryptedMsg = { ...msg, text: msg.plainText };
         } else {
           const decrypted = await decryptText(msg.text, privateKey);
@@ -199,7 +199,7 @@ const Chat = () => {
         decryptedMsg = { ...msg, aesKey };
       }
       setMessages((prev) => [...prev, decryptedMsg]);
-      if (msg.senderId === receiverId) socket.emit("markSeen", { senderId: receiverId });
+      if (senderId === receiverId) socket.emit("markSeen", { senderId: receiverId });
     };
     const onMessagesSeen = ({ by }) => {
       if (by === receiverId) {
