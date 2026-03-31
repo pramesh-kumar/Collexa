@@ -136,11 +136,12 @@ const Chat = () => {
   };
 
   const decryptMessages = async (msgs) => {
+    const token = localStorage.getItem("token");
+    const currentUserId = token ? JSON.parse(atob(token.split(".")[1])).userId : null;
     return Promise.all(msgs.map(async (msg) => {
       if (msg.type === "text" && msg.text) {
         const senderId = msg.senderId?.toString?.() || msg.senderId;
-        if (senderId === myId && msg.senderText) {
-          // Use senderText (encrypted with own public key)
+        if (senderId === currentUserId && msg.senderText) {
           const decrypted = await decryptText(msg.senderText, privateKey);
           return { ...msg, text: decrypted };
         }
