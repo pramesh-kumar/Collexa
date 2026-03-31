@@ -154,13 +154,14 @@ const Signup = () => {
             onClick={(e) => e.stopPropagation()}>
             <h2 className="text-xl font-bold text-gray-800 mb-4">Terms & Conditions</h2>
             <div className="text-sm text-gray-600 space-y-3">
-              <p><b>1. Eligibility</b> — Collexa is exclusively for IIT students with a valid <i>iitmandi.ac.in</i> email address.</p>
-              <p><b>2. Respectful Conduct</b> — Users must treat others with respect. Harassment, abuse, or inappropriate content is strictly prohibited.</p>
-              <p><b>3. Authentic Information</b> — You agree to provide accurate and truthful information in your profile.</p>
-              <p><b>4. Privacy</b> — Your data is used solely to operate the platform. We do not share your personal information with third parties.</p>
-              <p><b>5. Content</b> — You are responsible for all content you share. Offensive, explicit, or harmful content will result in account termination.</p>
-              <p><b>6. Account Security</b> — Keep your credentials secure. You are responsible for all activity under your account.</p>
-              <p><b>7. Termination</b> — We reserve the right to suspend or terminate accounts that violate these terms.</p>
+              <p><b>1. Eligibility</b> — Only IIT Mandi students with a valid <i>@iitmandi.ac.in</i> email can register.</p>
+              <p><b>2. Conduct</b> — Treat others with respect. Harassment or abuse will result in account termination.</p>
+              <p><b>3. Authenticity</b> — Provide accurate profile information. Impersonation is not allowed.</p>
+              <p><b>4. Privacy</b> — Your data is used only to operate the platform. We never sell or share it.</p>
+              <p><b>5. End-to-End Encryption</b> — Text messages are E2E encrypted (RSA). Only you and the recipient can read them — the server never sees plaintext.</p>
+              <p><b>6. Content</b> — You are responsible for what you share. Explicit or harmful content will result in termination.</p>
+              <p><b>7. Security</b> — Keep your credentials safe. You are responsible for all activity on your account.</p>
+              <p><b>8. Termination</b> — We may suspend or terminate accounts violating these terms without prior notice.</p>
             </div>
             <button onClick={() => { setAgreed(true); setShowTerms(false); }}
               className="w-full mt-6 bg-rose-500 text-white py-2.5 rounded-xl font-semibold hover:bg-rose-600 transition">
