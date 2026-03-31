@@ -3,6 +3,7 @@ import { io } from "socket.io-client";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { useAuth } from "./AuthContext";
+import { decryptText } from "../utils/crypto";
 
 const SocketContext = createContext();
 
@@ -84,11 +85,20 @@ export const SocketProvider = ({ children }) => {
       }
 
       const displayName = matchProfilesRef.current[senderId] || "Someone";
-      const preview = msg.type === "text"
-        ? msg.text?.slice(0, 50)
-        : msg.type === "image" ? "📷 Image"
-        : msg.type === "audio" ? "🎤 Voice message"
-        : "📎 File";
+      let preview;
+      if (msg.type === "text") {
+        try {
+          const privateKey = localStorage.getItem("privateKey");
+          const plain = privateKey ? await decryptText(msg.text, privateKey) : msg.text;
+          preview = plain?.slice(0, 50);
+        } catch {
+          preview = "New message";
+        }
+      } else {
+        preview = msg.type === "image" ? "📷 Image"
+          : msg.type === "audio" ? "🎤 Voice message"
+          : "📎 File";
+      }
 
       const goToChat = () => navigate(`/chat/${senderId}`);
 
