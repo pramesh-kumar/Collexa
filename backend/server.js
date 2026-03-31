@@ -76,8 +76,9 @@ io.on("connection", (socket) => {
         });
 
         // Send encrypted to receiver, plain text back to sender
-        io.to(receiverId).emit("newMessage", message);
-        socket.emit("newMessage", { ...message.toObject(), plainText: plainText || text });
+        const msgObj = message.toJSON();
+        io.to(receiverId).emit("newMessage", msgObj);
+        socket.emit("newMessage", { ...msgObj, plainText: plainText || text });
       } catch (err) {
         socket.emit("error", err.message);
       }

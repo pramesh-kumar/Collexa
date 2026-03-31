@@ -128,6 +128,13 @@ const Chat = () => {
   const isOnline = onlineUsers.has(receiverId);
   const privateKey = localStorage.getItem("privateKey");
 
+  const getAESKeyCache = () => JSON.parse(localStorage.getItem("aesKeys") || "{}");
+  const saveAESKey = (messageId, aesKeyB64) => {
+    const cache = getAESKeyCache();
+    cache[messageId] = aesKeyB64;
+    localStorage.setItem("aesKeys", JSON.stringify(cache));
+  };
+
   const decryptMessages = async (msgs) => {
     return Promise.all(msgs.map(async (msg) => {
       if (msg.type === "text" && msg.text) {
@@ -135,7 +142,12 @@ const Chat = () => {
         return { ...msg, text: decrypted };
       }
       if ((msg.type === "image" || msg.type === "audio" || msg.type === "file") && msg.encryptedKey) {
-        const aesKey = await decryptAESKey(msg.encryptedKey, privateKey);
+        const cache = getAESKeyCache();
+        let aesKey = cache[msg._id];
+        if (!aesKey) {
+          aesKey = await decryptAESKey(msg.encryptedKey, privateKey);
+          if (aesKey) saveAESKey(msg._id, aesKey);
+        }
         return { ...msg, aesKey };
       }
       return msg;
@@ -183,6 +195,7 @@ const Chat = () => {
         }
       } else if (msg.encryptedKey) {
         const aesKey = await decryptAESKey(msg.encryptedKey, privateKey);
+        if (aesKey) saveAESKey(msg._id, aesKey);
         decryptedMsg = { ...msg, aesKey };
       }
       setMessages((prev) => [...prev, decryptedMsg]);
@@ -318,7 +331,7 @@ const Chat = () => {
       fd.append("file", encryptedFile);
       fd.append("encryptedKey", encryptedKey);
       const { data } = await api.post(`/chat/${receiverId}/upload`, fd);
-      // Decrypt AES key locally to show file
+      saveAESKey(data.message._id, aesKeyB64);
       const localMsg = { ...data.message, aesKey: aesKeyB64 };
       setMessages((prev) => [...prev, localMsg]);
     } catch {
