@@ -5,10 +5,9 @@ const messageSchema = new mongoose.Schema({
   receiverId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   type: { type: String, enum: ["text", "image", "file", "audio"], default: "text" },
   text: { type: String, default: "" },
-  senderText: { type: String, default: "" }, // encrypted with sender's own public key
+  senderText: { type: String, default: "" },
   fileUrl: { type: String, default: "" },
   fileName: { type: String, default: "" },
-  encryptedKey: { type: String, default: "" }, // AES key encrypted with receiver's RSA public key
   seenBy: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   deletedFor: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
 }, { timestamps: true });

@@ -52,7 +52,6 @@ const uploadChatFile = async (req, res, next) => {
       type,
       fileUrl,
       fileName: file.originalname,
-      encryptedKey: req.body.encryptedKey || "",
       text: "",
     });
 
