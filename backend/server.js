@@ -63,7 +63,7 @@ io.on("connection", (socket) => {
   // Send current online list to newly connected user
   socket.emit("onlineList", Array.from(onlineUsers.keys()));
 
-  socket.on("sendMessage", async ({ receiverId, text, plainText }) => {
+  socket.on("sendMessage", async ({ receiverId, text, senderText, plainText }) => {
       try {
         const matched = await isMatched(socket.userId, receiverId);
         if (!matched) return socket.emit("error", "Not matched");
@@ -73,9 +73,9 @@ io.on("connection", (socket) => {
           receiverId,
           type: "text",
           text,
+          senderText: senderText || text,
         });
 
-        // Send encrypted to receiver, plain text back to sender
         const msgObj = message.toJSON();
         io.to(receiverId).emit("newMessage", msgObj);
         socket.emit("newMessage", { ...msgObj, plainText: plainText || text });

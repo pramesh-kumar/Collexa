@@ -138,6 +138,12 @@ const Chat = () => {
   const decryptMessages = async (msgs) => {
     return Promise.all(msgs.map(async (msg) => {
       if (msg.type === "text" && msg.text) {
+        const senderId = msg.senderId?.toString?.() || msg.senderId;
+        if (senderId === myId && msg.senderText) {
+          // Use senderText (encrypted with own public key)
+          const decrypted = await decryptText(msg.senderText, privateKey);
+          return { ...msg, text: decrypted };
+        }
         const decrypted = await decryptText(msg.text, privateKey);
         return { ...msg, text: decrypted };
       }
@@ -186,6 +192,7 @@ const Chat = () => {
     const onNewMessage = async (msg) => {
       let decryptedMsg = msg;
       const senderId = msg.senderId?.toString?.() || msg.senderId;
+      console.log("newMessage received:", { senderId, myId, plainText: msg.plainText, text: msg.text?.slice(0, 20) });
       if (msg.type === "text" && msg.text) {
         if (senderId === myId && msg.plainText) {
           decryptedMsg = { ...msg, text: msg.plainText };
@@ -310,10 +317,13 @@ const Chat = () => {
     try {
       const { data } = await api.get(`/users/key/${receiverId}`);
       let messageText = currentText;
+      let senderEncryptedText = currentText;
       if (data.publicKey) {
+        const myPublicKey = localStorage.getItem("publicKey");
         messageText = await encryptText(currentText, data.publicKey);
+        if (myPublicKey) senderEncryptedText = await encryptText(currentText, myPublicKey);
       }
-      socket.emit("sendMessage", { receiverId, text: messageText, plainText: currentText });
+      socket.emit("sendMessage", { receiverId, text: messageText, senderText: senderEncryptedText, plainText: currentText });
     } catch {
       toast.error("Failed to send message");
     }
