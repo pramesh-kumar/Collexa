@@ -7,6 +7,8 @@ const userSchema = new mongoose.Schema({
   otp: { type: String },
   otpExpiresAt: { type: Date },
   blockedUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+  publicKey: { type: String, default: "" },
+  encryptedPrivateKey: { type: String, default: "" },
 }, { timestamps: true });
 
 module.exports = mongoose.model("User", userSchema);

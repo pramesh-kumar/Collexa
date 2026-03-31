@@ -69,4 +69,13 @@ const getUserProfile = async (req, res, next) => {
   }
 };
 
-module.exports = { discoverUsers, blockUser, unblockUser, getBlockedUsers, getUserProfile };
+// GET /users/key/:userId — get someone's public key
+const getUserPublicKey = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.params.userId).select("publicKey");
+    if (!user) return res.status(404).json({ success: false, message: "User not found" });
+    res.json({ success: true, publicKey: user.publicKey });
+  } catch (err) { next(err); }
+};
+
+module.exports = { discoverUsers, blockUser, unblockUser, getBlockedUsers, getUserProfile, getUserPublicKey };

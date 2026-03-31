@@ -7,6 +7,7 @@ const messageSchema = new mongoose.Schema({
   text: { type: String, default: "" },
   fileUrl: { type: String, default: "" },
   fileName: { type: String, default: "" },
+  encryptedKey: { type: String, default: "" }, // AES key encrypted with receiver's RSA public key
   seenBy: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   deletedFor: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
 }, { timestamps: true });

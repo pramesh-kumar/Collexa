@@ -5,6 +5,7 @@ import EmojiPicker from "emoji-picker-react";
 import api from "../utils/api";
 import Navbar from "../components/Navbar";
 import { useSocket } from "../context/SocketContext";
+import { encryptText, decryptText, encryptFile, encryptAESKey, decryptAESKey, decryptFile } from "../utils/crypto";
 
 const Ticks = ({ msg, myId }) => {
   if (msg.senderId !== myId) return null;
@@ -20,6 +21,17 @@ const MessageBubble = ({ msg, myId, onTap, onLongPress, selected, selectMode }) 
   const isMe = msg.senderId === myId || msg.senderId?._id === myId;
   const isDeletedForAll = msg.deletedFor?.length >= 2;
   const wrapperClass = `flex items-center gap-2 ${isMe ? "justify-end" : "justify-start"}`;
+  const [decryptedUrl, setDecryptedUrl] = useState(null);
+
+  useEffect(() => {
+    if (msg.aesKey && msg.fileUrl && !decryptedUrl) {
+      fetch(msg.fileUrl)
+        .then((r) => r.arrayBuffer())
+        .then((buf) => decryptFile(buf, msg.aesKey, msg.type === "image" ? "image/jpeg" : msg.type === "audio" ? "audio/webm" : "application/octet-stream"))
+        .then((blob) => setDecryptedUrl(URL.createObjectURL(blob)))
+        .catch(() => {});
+    }
+  }, [msg.aesKey, msg.fileUrl]);
 
   const handleClick = (e) => { e.stopPropagation(); onTap(msg); };
   const handleContextMenu = (e) => { e.preventDefault(); onLongPress(msg); };
@@ -48,7 +60,7 @@ const MessageBubble = ({ msg, myId, onTap, onLongPress, selected, selectMode }) 
   let content;
   if (msg.type === "image") {
     content = (
-      <img src={msg.fileUrl} alt="img"
+      <img src={decryptedUrl || msg.fileUrl} alt="img"
         className={`max-w-[220px] rounded-2xl shadow cursor-pointer ${selected ? "opacity-60 ring-2 ring-rose-400" : ""}`}
         onClick={handleClick} onContextMenu={handleContextMenu}
         onTouchStart={startTouch} onTouchEnd={cancelTouch} />
@@ -58,12 +70,12 @@ const MessageBubble = ({ msg, myId, onTap, onLongPress, selected, selectMode }) 
       <div onClick={handleClick} onContextMenu={handleContextMenu}
         onTouchStart={startTouch} onTouchEnd={cancelTouch}
         className={`rounded-2xl ${selected ? "opacity-60 ring-2 ring-rose-400" : ""}`}>
-        <audio controls src={msg.fileUrl} className="max-w-[220px]" />
+        <audio controls src={decryptedUrl || msg.fileUrl} className="max-w-[220px]" />
       </div>
     );
   } else if (msg.type === "file") {
     content = (
-      <a href={selectMode ? undefined : msg.fileUrl} target="_blank" rel="noreferrer"
+      <a href={selectMode ? undefined : (decryptedUrl || msg.fileUrl)} target="_blank" rel="noreferrer"
         onClick={handleClick} onContextMenu={handleContextMenu}
         onTouchStart={startTouch} onTouchEnd={cancelTouch}
         className={`flex items-center gap-2 px-4 py-2 rounded-2xl text-sm ${selected ? "opacity-60 ring-2 ring-rose-400" : ""} ${
@@ -114,6 +126,21 @@ const Chat = () => {
   const navigate = useNavigate();
 
   const isOnline = onlineUsers.has(receiverId);
+  const privateKey = localStorage.getItem("privateKey");
+
+  const decryptMessages = async (msgs) => {
+    return Promise.all(msgs.map(async (msg) => {
+      if (msg.type === "text" && msg.text) {
+        const decrypted = await decryptText(msg.text, privateKey);
+        return { ...msg, text: decrypted };
+      }
+      if ((msg.type === "image" || msg.type === "audio" || msg.type === "file") && msg.encryptedKey) {
+        const aesKey = await decryptAESKey(msg.encryptedKey, privateKey);
+        return { ...msg, aesKey };
+      }
+      return msg;
+    }));
+  };
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -122,7 +149,10 @@ const Chat = () => {
     setMyId(payload.userId);
 
     api.get(`/chat/${receiverId}`)
-      .then(({ data }) => setMessages(data.messages))
+      .then(async ({ data }) => {
+        const decrypted = await decryptMessages(data.messages);
+        setMessages(decrypted);
+      })
       .catch(() => toast.error("Failed to load chat"));
 
     api.get("/matches")
@@ -141,8 +171,21 @@ const Chat = () => {
     if (!socket || !myId) return;
     socket.emit("markSeen", { senderId: receiverId });
 
-    const onNewMessage = (msg) => {
-      setMessages((prev) => [...prev, msg]);
+    const onNewMessage = async (msg) => {
+      let decryptedMsg = msg;
+      if (msg.type === "text" && msg.text) {
+        if (msg.senderId === myId && msg.plainText) {
+          // Sender sees plain text directly
+          decryptedMsg = { ...msg, text: msg.plainText };
+        } else {
+          const decrypted = await decryptText(msg.text, privateKey);
+          decryptedMsg = { ...msg, text: decrypted };
+        }
+      } else if (msg.encryptedKey) {
+        const aesKey = await decryptAESKey(msg.encryptedKey, privateKey);
+        decryptedMsg = { ...msg, aesKey };
+      }
+      setMessages((prev) => [...prev, decryptedMsg]);
       if (msg.senderId === receiverId) socket.emit("markSeen", { senderId: receiverId });
     };
     const onMessagesSeen = ({ by }) => {
@@ -245,20 +288,39 @@ const Chat = () => {
     }
   };
 
-  const sendMessage = (e) => {
+  const sendMessage = async (e) => {
     e.preventDefault();
     if (!text.trim() || !socket) return;
-    socket.emit("sendMessage", { receiverId, text });
+    const currentText = text;
     setText("");
     setShowEmoji(false);
+    try {
+      const { data } = await api.get(`/users/key/${receiverId}`);
+      let messageText = currentText;
+      if (data.publicKey) {
+        messageText = await encryptText(currentText, data.publicKey);
+      }
+      socket.emit("sendMessage", { receiverId, text: messageText, plainText: currentText });
+    } catch {
+      toast.error("Failed to send message");
+    }
   };
 
   const uploadFile = async (file) => {
-    const fd = new FormData();
-    fd.append("file", file);
     try {
+      // Get receiver's public key
+      const { data: keyData } = await api.get(`/users/key/${receiverId}`);
+      // Encrypt file with AES
+      const { encryptedFile, aesKeyB64 } = await encryptFile(file);
+      // Encrypt AES key with receiver's RSA public key
+      const encryptedKey = await encryptAESKey(aesKeyB64, keyData.publicKey);
+      const fd = new FormData();
+      fd.append("file", encryptedFile);
+      fd.append("encryptedKey", encryptedKey);
       const { data } = await api.post(`/chat/${receiverId}/upload`, fd);
-      setMessages((prev) => [...prev, data.message]);
+      // Decrypt AES key locally to show file
+      const localMsg = { ...data.message, aesKey: aesKeyB64 };
+      setMessages((prev) => [...prev, localMsg]);
     } catch {
       toast.error("Upload failed");
     }

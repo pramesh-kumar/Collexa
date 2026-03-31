@@ -116,4 +116,21 @@ const deleteAccount = async (req, res, next) => {
   }
 };
 
-module.exports = { signup, verifyOtp, login, deleteAccount };
+// POST /auth/keys — save user's public key + encrypted private key
+const saveKeys = async (req, res, next) => {
+  try {
+    const { publicKey, encryptedPrivateKey } = req.body;
+    await User.findByIdAndUpdate(req.userId, { publicKey, encryptedPrivateKey });
+    res.json({ success: true });
+  } catch (err) { next(err); }
+};
+
+// GET /auth/keys — get own encrypted private key
+const getMyKeys = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.userId).select("publicKey encryptedPrivateKey");
+    res.json({ success: true, publicKey: user.publicKey, encryptedPrivateKey: user.encryptedPrivateKey });
+  } catch (err) { next(err); }
+};
+
+module.exports = { signup, verifyOtp, login, deleteAccount, saveKeys, getMyKeys };

@@ -15,7 +15,7 @@ const Login = () => {
     setLoading(true);
     try {
       const { data } = await api.post("/auth/login", form);
-      login(data.token);
+      login(data.token, form.password);
       toast.success("Welcome back!");
       navigate("/dashboard");
     } catch (err) {
