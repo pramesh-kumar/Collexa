@@ -45,7 +45,7 @@ const Login = () => {
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
             type="email"
-            placeholder="Email (iitmandi.ac.in)"
+            placeholder="Email (@students.iitmandi.ac.in)"
             className="w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-rose-300"
             value={form.email}
             onChange={(e) => setForm({ ...form, email: e.target.value })}

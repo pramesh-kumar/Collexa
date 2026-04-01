@@ -14,7 +14,7 @@ const signup = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
-    if (!email.endsWith("@iitmandi.ac.in"))
+    if (!email.endsWith("@students.iitmandi.ac.in"))
       return res.status(400).json({ success: false, message: "Only IIT Mandi email addresses are allowed" });
 
     const existing = await User.findOne({ email });
