@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { useSocket } from "../context/SocketContext";
 import api from "../utils/api";
 import toast from "react-hot-toast";
 
@@ -13,7 +12,6 @@ const NAV_LINKS = [
 
 const Navbar = () => {
   const { logout } = useAuth();
-  const { unreadMap } = useSocket();
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const [open, setOpen] = useState(false);
@@ -62,11 +60,6 @@ const Navbar = () => {
             }`}
           >
             {label}
-            {to === "/matches" && Object.values(unreadMap).reduce((a, b) => a + b, 0) > 0 && (
-              <span className="absolute -top-2 -right-3 bg-rose-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
-                {Object.values(unreadMap).reduce((a, b) => a + b, 0) > 9 ? "9+" : Object.values(unreadMap).reduce((a, b) => a + b, 0)}
-              </span>
-            )}
           </Link>
         ))}
       </div>

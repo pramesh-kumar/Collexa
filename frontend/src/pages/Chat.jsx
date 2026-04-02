@@ -198,7 +198,6 @@ const Chat = () => {
     const onNewMessage = async (msg) => {
       let decryptedMsg = msg;
       const senderId = msg.senderId?.toString?.() || msg.senderId;
-      console.log("newMessage received:", { senderId, myId, plainText: msg.plainText, text: msg.text?.slice(0, 20) });
       if (msg.type === "text" && msg.text) {
         if (senderId === myId && msg.plainText) {
           decryptedMsg = { ...msg, text: msg.plainText };
