@@ -76,7 +76,7 @@ const Signup = () => {
               value={form.name} onChange={(e) => set("name", e.target.value)} />
 
             {/* Email */}
-            <input type="email" placeholder="Email (@students.iitmandi.ac.in)" required
+            <input type="email" placeholder="Institute email (@iit*.ac.in)" required
               className="w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-rose-300"
               value={form.email} onChange={(e) => set("email", e.target.value)} />
 
@@ -154,7 +154,7 @@ const Signup = () => {
             onClick={(e) => e.stopPropagation()}>
             <h2 className="text-xl font-bold text-gray-800 mb-4">Terms & Conditions</h2>
             <div className="text-sm text-gray-600 space-y-3">
-              <p><b>1. Eligibility</b> — Only IIT Mandi students with a valid <i>@students.iitmandi.ac.in</i> email can register.</p>
+              <p><b>1. Eligibility</b> — Only IIT institute students with a valid IIT email (<i>@iit*.ac.in</i>) can register.</p>
               <p><b>2. Conduct</b> — Treat others with respect. Harassment or abuse will result in account termination.</p>
               <p><b>3. Authenticity</b> — Provide accurate profile information. Impersonation is not allowed.</p>
               <p><b>4. Privacy</b> — Your data is used only to operate the platform. We never sell or share it.</p>

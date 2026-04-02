@@ -9,14 +9,23 @@ const { sendOTP } = require("../config/mailer");
 
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
 
+const validIITDomains = [
+  "iitb.ac.in","iitd.ac.in","iitk.ac.in","iitm.ac.in","iitkgp.ac.in",
+  "iitg.ac.in","iitr.ac.in","iitmandi.ac.in","iitgn.ac.in","iith.ac.in",
+  "iitj.ac.in","iitp.ac.in","iitrpr.ac.in","iiti.ac.in","iitbbs.ac.in",
+  "iitbhilai.ac.in","iitgoa.ac.in","iitjammu.ac.in","iitdh.ac.in",
+  "iitpkd.ac.in","iittp.ac.in","iitism.ac.in","iitbhu.ac.in"
+];
+const isValidIITEmail = (email) => validIITDomains.some(d => email.endsWith("@" + d) || email.endsWith("@students." + d));
+
 // POST /auth/signup
 const signup = async (req, res, next) => {
   try {
     const { email: rawEmail, password } = req.body;
     const email = rawEmail.toLowerCase();
 
-    if (!email.endsWith("@students.iitmandi.ac.in"))
-      return res.status(400).json({ success: false, message: "Only IIT Mandi email addresses are allowed" });
+    if (!isValidIITEmail(email))
+      return res.status(400).json({ success: false, message: "Only IIT institute email addresses are allowed" });
 
     const existing = await User.findOne({ email });
     if (existing?.isVerified)
@@ -140,6 +149,9 @@ const getMyKeys = async (req, res, next) => {
 const forgotPassword = async (req, res, next) => {
   try {
     const email = req.body.email.toLowerCase();
+    if (!isValidIITEmail(email))
+      return res.status(400).json({ success: false, message: "Only IIT institute email addresses are allowed" });
+
     const user = await User.findOne({ email, isVerified: true });
     if (!user) return res.status(404).json({ success: false, message: "No verified account found" });
 

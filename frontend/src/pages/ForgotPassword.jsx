@@ -63,7 +63,7 @@ const ForgotPassword = () => {
           <form onSubmit={handleSendOTP} className="space-y-4">
             <input
               type="email"
-              placeholder="Email (@students.iitmandi.ac.in)"
+              placeholder="Institute email (@iit*.ac.in)"
               className="w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-rose-300"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
