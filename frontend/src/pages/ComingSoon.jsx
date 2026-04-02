@@ -10,7 +10,7 @@ const ComingSoon = () => {
       <div className="bg-white rounded-2xl shadow-lg p-10 w-full max-w-md text-center">
         <p className="text-5xl mb-4">{isGroup ? "👥" : "📝"}</p>
         <h1 className="text-2xl font-bold text-gray-800 mb-2">
-          {isGroup ? "Create Group" : "Interview Experiences"}
+          {isGroup ? "Group Chat" : "Interview Experiences"}
         </h1>
         <p className="text-gray-400 mb-6">This feature is coming soon! 🚀</p>
         <button

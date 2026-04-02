@@ -95,7 +95,7 @@ const Navbar = () => {
               <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
               <div className="absolute right-0 top-full mt-1 bg-white shadow-md rounded-md w-48 z-50">
                 <Link to="/groups" onClick={() => setOpen(false)} className={menuItemClass}>
-                  Create Group 👥
+                  Group Chat 👥
                 </Link>
                 <Link to="/interview" onClick={() => setOpen(false)} className={menuItemClass}>
                   Interview Experiences
@@ -129,7 +129,7 @@ const Navbar = () => {
                 Blocked Users
               </Link>
               <Link to="/groups" onClick={() => setOpen(false)} className={menuItemClass}>
-                Create Group 👥
+                Group Chat 👥
               </Link>
               <Link to="/interview" onClick={() => setOpen(false)} className={menuItemClass}>
                 Interview Experiences
