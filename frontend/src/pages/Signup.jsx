@@ -92,7 +92,7 @@ const Signup = () => {
             </div>
 
             {/* Course */}
-            <input type="text" placeholder="Course Name (e.g. B.Tech)"
+            <input type="text" placeholder="Course Name (e.g. B.Tech)" required
               className="w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-rose-300"
               value={form.course} onChange={(e) => set("course", e.target.value)} />
 

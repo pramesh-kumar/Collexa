@@ -7,13 +7,34 @@ import Navbar from "../components/Navbar";
 import { useSocket } from "../context/SocketContext";
 import { encryptText, decryptText } from "../utils/crypto";
 
+const formatTime = (dateStr) => {
+  const d = new Date(dateStr);
+  let h = d.getHours(), m = d.getMinutes();
+  const ampm = h >= 12 ? "PM" : "AM";
+  h = h % 12 || 12;
+  return `${h}:${m.toString().padStart(2, "0")} ${ampm}`;
+};
+
+const formatDateLabel = (dateStr) => {
+  const d = new Date(dateStr);
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const msgDay = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const diff = Math.round((today - msgDay) / (1000 * 60 * 60 * 24));
+  if (diff === 0) return "Today";
+  if (diff === 1) return "Yesterday";
+  return d.toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
+};
+
+const isSameDay = (a, b) => new Date(a).toDateString() === new Date(b).toDateString();
+
 const Ticks = ({ msg, myId }) => {
   if (msg.senderId !== myId) return null;
   const seen = msg.seenBy?.some((id) => id.toString() !== myId.toString());
-  return (
-    <span className={`text-xs ml-1 ${seen ? "text-green-400" : "text-white/60"}`}>
-      {seen ? "✓✓" : "✓"}
-    </span>
+  return seen ? (
+    <span className="text-[11px] ml-1 font-bold tracking-[-3px] text-green-400">✓✓</span>
+  ) : (
+    <span className="text-[11px] ml-1 font-bold text-white/60">✓</span>
   );
 };
 
@@ -75,11 +96,14 @@ const MessageBubble = ({ msg, myId, onTap, onLongPress, selected, selectMode }) 
     );
   } else {
     content = (
-      <div className={`${bubbleBase} px-4 py-2`}
+      <div className={`${bubbleBase} px-4 py-1.5`}
         onClick={handleClick} onContextMenu={handleContextMenu}
         onTouchStart={startTouch} onTouchEnd={cancelTouch}>
-        {msg.text}
-        <Ticks msg={msg} myId={myId} />
+        <span>{msg.text}</span>
+        <span className="flex items-center justify-end gap-1 mt-0.5">
+          <span className="text-[10px] opacity-70">{formatTime(msg.createdAt)}</span>
+          <Ticks msg={msg} myId={myId} />
+        </span>
       </div>
     );
   }
@@ -89,14 +113,21 @@ const MessageBubble = ({ msg, myId, onTap, onLongPress, selected, selectMode }) 
       {selectMode && (
         <input type="checkbox" readOnly checked={selected} className="accent-rose-500 w-4 h-4 shrink-0" />
       )}
-      {content}
+      <div className="flex flex-col gap-0.5">
+        {content}
+        {msg.type !== "text" && (
+          <span className={`text-[10px] text-gray-400 ${isMe ? "text-right" : "text-left"}`}>
+            {formatTime(msg.createdAt)}
+          </span>
+        )}
+      </div>
     </div>
   );
 };
 
 const Chat = () => {
   const { userId: receiverId } = useParams();
-  const { socket, onlineUsers } = useSocket();
+  const { socket, onlineUsers, clearUnreadFrom } = useSocket();
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState("");
   const [myId, setMyId] = useState(null);
@@ -162,6 +193,7 @@ const Chat = () => {
   useEffect(() => {
     if (!socket || !myId) return;
     socket.emit("markSeen", { senderId: receiverId });
+    clearUnreadFrom(receiverId);
 
     const onNewMessage = async (msg) => {
       let decryptedMsg = msg;
@@ -399,8 +431,15 @@ const Chat = () => {
           {messages.length === 0 && (
             <p className="text-center text-gray-400 text-sm mt-10">Say hi! 👋</p>
           )}
-          {messages.map((msg) => (
+          {messages.map((msg, i) => (
             <div key={msg._id}>
+              {(i === 0 || !isSameDay(messages[i - 1].createdAt, msg.createdAt)) && (
+                <div className="flex items-center gap-2 my-3">
+                  <div className="flex-1 h-px bg-gray-100" />
+                  <span className="text-[11px] text-gray-400 font-medium px-2">{formatDateLabel(msg.createdAt)}</span>
+                  <div className="flex-1 h-px bg-gray-100" />
+                </div>
+              )}
               <MessageBubble
                 msg={msg} myId={myId}
                 onTap={handleTap}

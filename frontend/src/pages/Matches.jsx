@@ -10,7 +10,7 @@ const Matches = () => {
   const [loading, setLoading] = useState(true);
   const [confirmId, setConfirmId] = useState(null);
   const navigate = useNavigate();
-  const { onlineUsers } = useSocket();
+  const { onlineUsers, unreadMap, clearUnreadFrom } = useSocket();
 
   useEffect(() => {
     api.get("/matches")
@@ -81,13 +81,20 @@ const Matches = () => {
                 </div>
 
                 {/* Remove */}
-                <button
-                  onClick={(e) => handleRemove(e, m.userId)}
-                  className="shrink-0 text-gray-500 hover:text-red-500 transition text-lg font-bold"
-                  title="Remove match"
-                >
-                  ✕
-                </button>
+                <div className="flex items-center gap-2 shrink-0">
+                  {unreadMap[m.userId?.toString()] > 0 && (
+                    <span className="bg-rose-500 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center">
+                      {unreadMap[m.userId?.toString()] > 9 ? "9+" : unreadMap[m.userId?.toString()]}
+                    </span>
+                  )}
+                  <button
+                    onClick={(e) => handleRemove(e, m.userId)}
+                    className="text-gray-500 hover:text-red-500 transition text-lg font-bold"
+                    title="Remove match"
+                  >
+                    ✕
+                  </button>
+                </div>
               </div>
             ))}
           </div>

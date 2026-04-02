@@ -45,6 +45,9 @@ export const SocketProvider = ({ children }) => {
   const { token } = useAuth();
   const socketRef = useRef(null);
   const [onlineUsers, setOnlineUsers] = useState(new Set());
+  const [unreadMap, setUnreadMap] = useState({});
+  const clearUnreadFrom = useRef((id) => setUnreadMap((prev) => { const n = { ...prev }; delete n[id]; return n; })).current;
+  const addUnread = useRef((senderId) => setUnreadMap((prev) => ({ ...prev, [senderId]: (prev[senderId] || 0) + 1 }))).current;
   const matchProfilesRef = useRef({});
   const navigate = useNavigate();
 
@@ -64,16 +67,27 @@ export const SocketProvider = ({ children }) => {
       auth: { token },
     });
 
+    // Fetch persisted unread counts from backend on load
+    fetch("/api/chat/unread-counts", { headers: { Authorization: `Bearer ${token}` } })
+      .then((r) => r.json())
+      .then(({ unreadCounts }) => { if (unreadCounts) setUnreadMap(unreadCounts); })
+      .catch(() => {});
+
     socket.on("onlineList", (ids) => setOnlineUsers(new Set(ids)));
     socket.on("userOnline", (id) => setOnlineUsers((prev) => new Set([...prev, id])));
     socket.on("userOffline", (id) => setOnlineUsers((prev) => { const s = new Set(prev); s.delete(id); return s; }));
 
     socket.on("newMessage", async (msg) => {
       const senderId = msg.senderId?.toString?.() || msg.senderId;
+      const receiverId = msg.receiverId?.toString?.() || msg.receiverId;
       const currentPath = window.location.pathname;
       const isInChat = currentPath === `/chat/${senderId}`;
-      const myId = JSON.parse(atob(token.split(".")[1])).userId;
-      if (isInChat || senderId === myId) return;
+      const myId = JSON.parse(atob(token.split(".")[1])).userId?.toString();
+      // only increment if I am the receiver, not the sender
+      if (receiverId !== myId) return;
+      if (isInChat) return;
+
+      setUnreadMap((prev) => ({ ...prev, [senderId]: (prev[senderId] || 0) + 1 }));
 
       // Get name from cache or fetch it
       if (!matchProfilesRef.current[senderId]) {
@@ -129,7 +143,7 @@ export const SocketProvider = ({ children }) => {
   }, [token]);
 
   return (
-    <SocketContext.Provider value={{ socket: socketRef.current, onlineUsers }}>
+    <SocketContext.Provider value={{ socket: socketRef.current, onlineUsers, unreadMap, clearUnreadFrom }}>
       {children}
     </SocketContext.Provider>
   );

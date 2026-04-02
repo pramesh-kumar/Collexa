@@ -12,7 +12,8 @@ const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString()
 // POST /auth/signup
 const signup = async (req, res, next) => {
   try {
-    const { email, password } = req.body;
+    const { email: rawEmail, password } = req.body;
+    const email = rawEmail.toLowerCase();
 
     if (!email.endsWith("@students.iitmandi.ac.in"))
       return res.status(400).json({ success: false, message: "Only IIT Mandi email addresses are allowed" });
@@ -42,7 +43,8 @@ const signup = async (req, res, next) => {
 // POST /auth/verify-otp
 const verifyOtp = async (req, res, next) => {
   try {
-    const { email, otp, name, course, branch, year, age } = req.body;
+    const { email: rawEmail, otp, name, course, branch, year, age } = req.body;
+    const email = rawEmail.toLowerCase();
 
     const user = await User.findOne({ email });
     if (!user) return res.status(404).json({ success: false, message: "User not found" });
@@ -61,7 +63,7 @@ const verifyOtp = async (req, res, next) => {
         await Profile.create({
           userId: user._id,
           name,
-          course: course || "",
+          course,
           branch,
           year: Number(year),
           age: age ? Number(age) : 18,
@@ -80,7 +82,8 @@ const verifyOtp = async (req, res, next) => {
 // POST /auth/login
 const login = async (req, res, next) => {
   try {
-    const { email, password } = req.body;
+    const { email: rawEmail, password } = req.body;
+    const email = rawEmail.toLowerCase();
 
     const user = await User.findOne({ email });
     if (!user || !user.isVerified)
@@ -136,7 +139,7 @@ const getMyKeys = async (req, res, next) => {
 // POST /auth/forgot-password
 const forgotPassword = async (req, res, next) => {
   try {
-    const { email } = req.body;
+    const email = req.body.email.toLowerCase();
     const user = await User.findOne({ email, isVerified: true });
     if (!user) return res.status(404).json({ success: false, message: "No verified account found" });
 
@@ -154,7 +157,8 @@ const forgotPassword = async (req, res, next) => {
 // POST /auth/reset-password
 const resetPassword = async (req, res, next) => {
   try {
-    const { email, otp, newPassword } = req.body;
+    const { otp, newPassword } = req.body;
+    const email = req.body.email.toLowerCase();
     const user = await User.findOne({ email, isVerified: true });
     if (!user) return res.status(404).json({ success: false, message: "User not found" });
 

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useSocket } from "../context/SocketContext";
 import api from "../utils/api";
 import toast from "react-hot-toast";
 
@@ -12,6 +13,7 @@ const NAV_LINKS = [
 
 const Navbar = () => {
   const { logout } = useAuth();
+  const { unreadMap } = useSocket();
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const [open, setOpen] = useState(false);
@@ -40,8 +42,10 @@ const Navbar = () => {
     }
   };
 
+  const menuItemClass = "w-full text-left px-4 py-3 text-sm font-medium text-gray-700 hover:text-rose-500 border-b border-gray-100 block";
+
   return (
-    <nav className="bg-white shadow-sm px-4 py-3 flex justify-between items-center relative z-50">
+    <nav className="bg-white shadow-sm px-4 py-3 flex justify-between items-center relative z-50 sticky top-0">
       {/* Logo */}
       <Link to="/dashboard" className="text-lg font-bold text-rose-500">
         💘 Collexa
@@ -53,16 +57,21 @@ const Navbar = () => {
           <Link
             key={to}
             to={to}
-            className={`hover:text-rose-500 transition-colors ${
+            className={`relative hover:text-rose-500 transition-colors ${
               pathname === to ? "text-rose-500 font-semibold" : ""
             }`}
           >
             {label}
+            {to === "/matches" && Object.values(unreadMap).reduce((a, b) => a + b, 0) > 0 && (
+              <span className="absolute -top-2 -right-3 bg-rose-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                {Object.values(unreadMap).reduce((a, b) => a + b, 0) > 9 ? "9+" : Object.values(unreadMap).reduce((a, b) => a + b, 0)}
+              </span>
+            )}
           </Link>
         ))}
       </div>
 
-      {/* Desktop: blocked + logout */}
+      {/* Desktop: Blocked + Logout visible, hamburger for rest */}
       <div className="hidden sm:flex items-center gap-4">
         <Link
           to="/blocked"
@@ -78,15 +87,39 @@ const Navbar = () => {
         >
           Logout
         </button>
-        <button
-          onClick={handleDeleteAccount}
-          className="text-sm font-medium text-red-500 hover:text-red-600 transition-colors"
-        >
-          Delete Account
-        </button>
+
+        {/* Desktop hamburger */}
+        <div className="relative">
+          <button
+            className="text-gray-600 text-lg focus:outline-none"
+            onClick={() => setOpen((o) => !o)}
+            aria-label="More"
+          >
+            {open ? "✕" : "☰"}
+          </button>
+          {open && (
+            <>
+              <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+              <div className="absolute right-0 top-full mt-1 bg-white shadow-md rounded-md w-48 z-50">
+                <Link to="/groups" onClick={() => setOpen(false)} className={menuItemClass}>
+                  Create Group 👥
+                </Link>
+                <Link to="/interview" onClick={() => setOpen(false)} className={menuItemClass}>
+                  Interview Experiences
+                </Link>
+                <button
+                  onClick={() => { setOpen(false); handleDeleteAccount(); }}
+                  className="w-full text-left px-4 py-3 text-sm font-medium text-red-500 hover:text-red-600"
+                >
+                  Delete Account
+                </button>
+              </div>
+            </>
+          )}
+        </div>
       </div>
 
-      {/* Mobile: hamburger for logout */}
+      {/* Mobile hamburger */}
       <div className="sm:hidden relative">
         <button
           className="text-gray-600 text-lg focus:outline-none"
@@ -96,27 +129,32 @@ const Navbar = () => {
           {open ? "✕" : "☰"}
         </button>
         {open && (
-          <div className="absolute right-0 top-full mt-1 bg-white shadow-md rounded-md w-36">
-            <Link
-              to="/blocked"
-              onClick={() => setOpen(false)}
-              className="block px-4 py-3 text-sm font-medium text-gray-700 hover:text-rose-500 border-b border-gray-100"
-            >
-              Blocked Users
-            </Link>
-            <button
-              onClick={handleLogout}
-              className="w-full text-left px-4 py-3 text-sm font-medium text-rose-500 hover:text-rose-600 border-b border-gray-100"
-            >
-              Logout
-            </button>
-            <button
-              onClick={() => { setOpen(false); handleDeleteAccount(); }}
-              className="w-full text-left px-4 py-3 text-sm font-medium text-red-500 hover:text-red-600"
-            >
-              Delete Account
-            </button>
-          </div>
+          <>
+            <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+            <div className="absolute right-0 top-full mt-1 bg-white shadow-md rounded-md w-48 z-50">
+              <Link to="/blocked" onClick={() => setOpen(false)} className={menuItemClass}>
+                Blocked Users
+              </Link>
+              <Link to="/groups" onClick={() => setOpen(false)} className={menuItemClass}>
+                Create Group 👥
+              </Link>
+              <Link to="/interview" onClick={() => setOpen(false)} className={menuItemClass}>
+                Interview Experiences
+              </Link>
+              <button
+                onClick={handleLogout}
+                className="w-full text-left px-4 py-3 text-sm font-medium text-rose-500 hover:text-rose-600 border-b border-gray-100"
+              >
+                Logout
+              </button>
+              <button
+                onClick={() => { setOpen(false); handleDeleteAccount(); }}
+                className="w-full text-left px-4 py-3 text-sm font-medium text-red-500 hover:text-red-600"
+              >
+                Delete Account
+              </button>
+            </div>
+          </>
         )}
       </div>
     </nav>

@@ -43,6 +43,11 @@ const Dashboard = () => {
     }
   };
 
+  const handleSkip = () => {
+    if (!users.length) return;
+    setUsers((prev) => [prev[prev.length - 1], ...prev.slice(0, -1)]);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
@@ -85,15 +90,19 @@ const Dashboard = () => {
               </div>
             </div>
 
-            <div className="flex justify-center gap-8 mt-6">
+            <div className="flex justify-center gap-6 mt-6">
               <button
                 onClick={() => handleSwipe("pass")}
-                className="w-16 h-16 bg-white rounded-full shadow-lg text-3xl flex items-center justify-center hover:scale-110 transition"
+                className="w-12 h-12 bg-white rounded-full shadow-lg text-xl flex items-center justify-center hover:scale-110 transition"
               >❌</button>
               <button
+                onClick={handleSkip}
+                className="w-12 h-12 bg-black-400 rounded-full shadow-lg text-xl flex items-center justify-center hover:scale-110 transition self-center"
+              >🔄</button>
+              <button
                 onClick={() => handleSwipe("like")}
-                className="w-16 h-16 bg-rose-500 rounded-full shadow-lg text-3xl flex items-center justify-center hover:scale-110 transition"
-              >💚</button>
+                className="w-12 h-12 bg-rose-500 rounded-full shadow-lg text-2xl flex items-center justify-center hover:scale-110 transition"
+              >💛</button>
             </div>
           </>
         )}

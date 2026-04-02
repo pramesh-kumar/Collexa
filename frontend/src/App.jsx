@@ -13,6 +13,7 @@ import Chat from "./pages/Chat";
 import BlockedUsers from "./pages/BlockedUsers";
 import ForgotPassword from "./pages/ForgotPassword";
 import UserProfile from "./pages/UserProfile";
+import ComingSoon from "./pages/ComingSoon";
 
 const AppContent = () => {
   const { pathname } = useLocation();
@@ -31,6 +32,8 @@ const AppContent = () => {
         <Route path="/chat/:userId" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
         <Route path="/blocked" element={<ProtectedRoute><BlockedUsers /></ProtectedRoute>} />
         <Route path="/user/:userId" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
+        <Route path="/groups" element={<ProtectedRoute><ComingSoon /></ProtectedRoute>} />
+        <Route path="/interview" element={<ProtectedRoute><ComingSoon /></ProtectedRoute>} />
       </Routes>
       {!hideFooter && <Footer />}
     </>

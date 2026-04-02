@@ -55,6 +55,9 @@ const uploadChatFile = async (req, res, next) => {
       text: "",
     });
 
+    const { io } = require("../server");
+    io.to(targetId.toString()).emit("newMessage", message.toJSON());
+
     res.json({ success: true, message });
   } catch (err) {
     next(err);
@@ -85,4 +88,17 @@ const clearChat = async (req, res, next) => {
   }
 };
 
-module.exports = { getChatHistory, uploadChatFile, clearChat, isMatched };
+// GET /chat/unread-counts
+const getUnreadCounts = async (req, res, next) => {
+  try {
+    const counts = await Message.aggregate([
+      { $match: { receiverId: new (require("mongoose").Types.ObjectId)(req.userId), seenBy: { $ne: new (require("mongoose").Types.ObjectId)(req.userId) }, deletedFor: { $ne: new (require("mongoose").Types.ObjectId)(req.userId) } } },
+      { $group: { _id: "$senderId", count: { $sum: 1 } } },
+    ]);
+    const result = {};
+    counts.forEach(({ _id, count }) => { result[_id.toString()] = count; });
+    res.json({ success: true, unreadCounts: result });
+  } catch (err) { next(err); }
+};
+
+module.exports = { getChatHistory, uploadChatFile, clearChat, isMatched, getUnreadCounts };

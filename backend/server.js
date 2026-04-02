@@ -77,7 +77,7 @@ io.on("connection", (socket) => {
         });
 
         const msgObj = message.toJSON();
-        io.to(receiverId).emit("newMessage", msgObj);
+        io.to(receiverId.toString()).emit("newMessage", msgObj);
         socket.emit("newMessage", { ...msgObj, plainText: plainText || text });
       } catch (err) {
         socket.emit("error", err.message);
