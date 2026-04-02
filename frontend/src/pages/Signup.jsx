@@ -4,6 +4,7 @@ import toast from "react-hot-toast";
 import api from "../utils/api";
 import StreamDropdown from "../components/StreamDropdown";
 import YearDropdown from "../components/YearDropdown";
+import InstituteDropdown from "../components/InstituteDropdown";
 
 const EyeIcon = ({ open }) => open ? (
   <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -18,7 +19,7 @@ const EyeIcon = ({ open }) => open ? (
 
 const Signup = () => {
   const [step, setStep] = useState(1);
-  const [form, setForm] = useState({ email: "", password: "", name: "", course: "", branch: "", year: "", age: "" });
+  const [form, setForm] = useState({ email: "", password: "", name: "", college: "", course: "", branch: "", year: "", age: "" });
   const [showPass, setShowPass] = useState(false);
   const [otp, setOtp] = useState("");
   const [agreed, setAgreed] = useState(false);
@@ -49,7 +50,7 @@ const Signup = () => {
     try {
       await api.post("/auth/verify-otp", {
         email: form.email, otp,
-        name: form.name, course: form.course, branch: form.branch, year: form.year, age: form.age,
+        name: form.name, college: form.college, course: form.course, branch: form.branch, year: form.year, age: form.age,
       });
       toast.success("Email verified! Please login.");
       navigate("/login");
@@ -90,6 +91,9 @@ const Signup = () => {
                 <EyeIcon open={showPass} />
               </button>
             </div>
+
+            {/* College */}
+            <InstituteDropdown value={form.college} onChange={(v) => set("college", v)} placeholder="Select Institute" required />
 
             {/* Course */}
             <input type="text" placeholder="Course Name (e.g. B.Tech)" required

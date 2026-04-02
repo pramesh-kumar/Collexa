@@ -4,6 +4,7 @@ const profileSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true, unique: true },
   name: { type: String, required: true },
   age: { type: Number, required: true },
+  college: { type: String, required: true },
   course: { type: String, default: "" },
   branch: { type: String, required: true },
   year: { type: Number, required: true },

@@ -74,7 +74,7 @@ const Matches = () => {
                 {/* Info */}
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-gray-800 truncate">{m.name}, {m.age}</p>
-                  <p className="text-xs text-rose-500 truncate">{m.branch} • Year {m.year}</p>
+                  <p className="text-xs text-rose-500 truncate">{m.college} • {m.branch}</p>
                   <button
                     onClick={(e) => { e.stopPropagation(); navigate(`/user/${m.userId}`); }}
                     className="text-xs text-rose-500 hover:text-rose-600 mt-0.5 font-medium">View Profile →</button>

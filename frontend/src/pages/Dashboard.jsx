@@ -5,13 +5,14 @@ import Navbar from "../components/Navbar";
 import SwipeCard from "../components/SwipeCard";
 import StreamDropdown from "../components/StreamDropdown";
 import YearDropdown from "../components/YearDropdown";
+import InstituteDropdown from "../components/InstituteDropdown";
 
 const STREAMS = ["CSE","IT","AI","DSE","ECE","EEE","EE","ME","CE","CHE","VLSI","PED","EP","AE","BME","BT","MET","PHYSICS","CHEMISTRY","BIO","MATH"];
 const YEARS = [1, 2, 3, 4, 5];
 
 const Dashboard = () => {
   const [users, setUsers] = useState([]);
-  const [filters, setFilters] = useState({ branch: "", year: "" });
+  const [filters, setFilters] = useState({ branch: "", year: "", college: "" });
   const [loading, setLoading] = useState(true);
 
   const fetchUsers = async () => {
@@ -20,6 +21,7 @@ const Dashboard = () => {
       const params = {};
       if (filters.branch) params.branch = filters.branch;
       if (filters.year) params.year = filters.year;
+      if (filters.college) params.college = filters.college;
       const { data } = await api.get("/users/discover", { params });
       setUsers(data.users);
     } catch {
@@ -52,12 +54,15 @@ const Dashboard = () => {
     <div className="min-h-screen bg-gray-50">
       <Navbar />
       <div className="max-w-md mx-auto p-4">
-        <div className="flex gap-3 mb-6">
+        <div className="flex gap-2 mb-6">
           <div className="flex-1">
-            <StreamDropdown value={filters.branch} onChange={(v) => setFilters({ ...filters, branch: v })} placeholder="All Streams" />
+            <InstituteDropdown value={filters.college} onChange={(v) => setFilters({ ...filters, college: v })} placeholder="Institutes" />
           </div>
           <div className="flex-1">
-            <YearDropdown value={filters.year} onChange={(v) => setFilters({ ...filters, year: v })} placeholder="All Years" allOption />
+            <StreamDropdown value={filters.branch} onChange={(v) => setFilters({ ...filters, branch: v })} placeholder="Stream" />
+          </div>
+          <div className="flex-1">
+            <YearDropdown value={filters.year} onChange={(v) => setFilters({ ...filters, year: v })} placeholder="Year" allOption />
           </div>
         </div>
 

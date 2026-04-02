@@ -5,7 +5,7 @@ const User = require("../models/User");
 // GET /users/discover
 const discoverUsers = async (req, res, next) => {
   try {
-    const { branch, year } = req.query;
+    const { branch, year, college } = req.query;
 
     const currentUser = await User.findById(req.userId).select("blockedUsers");
     const alreadySwiped = await Swipe.find({ userId: req.userId }).distinct("targetUserId");
@@ -15,6 +15,7 @@ const discoverUsers = async (req, res, next) => {
     const filters = { userId: { $nin: excluded } };
     if (branch) filters.branch = branch;
     if (year) filters.year = Number(year);
+    if (college) filters.college = college;
 
     const users = await Profile.find(filters).limit(20).select("-__v");
     res.json({ success: true, users });

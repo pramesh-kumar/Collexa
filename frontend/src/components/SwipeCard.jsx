@@ -51,8 +51,8 @@ const SwipeCard = ({ profile, onSwipe }) => {
         {/* Scrollable info — max height so it doesn't overflow */}
         <div className="p-4 max-h-40 overflow-y-auto">
           <h2 className="text-xl font-bold text-gray-800">{profile.name}, {profile.age}</h2>
-          <p className="text-rose-500 font-medium text-sm">{profile.branch} • Year {profile.year}</p>
-          {profile.course && <p className="text-gray-400 text-xs mt-0.5">{profile.course}</p>}
+          <p className="text-rose-500 font-medium text-sm">{profile.college} • {profile.branch}</p>
+          <p className="text-gray-400 text-xs mt-0.5">{profile.course} • Year {profile.year}</p>
           {profile.bio && <p className="text-gray-500 text-sm mt-2">{profile.bio}</p>}
           {profile.interests?.length > 0 && (
             <div className="flex flex-wrap gap-2 mt-3">

@@ -57,8 +57,8 @@ const UserProfile = () => {
           <div className="p-5 space-y-3">
             <div>
               <h2 className="text-2xl font-bold text-gray-800">{profile.name}, {profile.age}</h2>
-              <p className="text-rose-500 font-medium">{profile.branch} • Year {profile.year}</p>
-              {profile.course && <p className="text-gray-400 text-sm">{profile.course}</p>}
+              <p className="text-rose-500 font-medium">{profile.college} • {profile.branch}</p>
+              <p className="text-gray-400 text-sm">{profile.course} • Year {profile.year}</p>
             </div>
 
             {profile.bio && (

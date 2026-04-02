@@ -10,8 +10,8 @@ const { sendOTP } = require("../config/mailer");
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
 
 const validIITDomains = [
-  "iitb.ac.in","iitd.ac.in","iitk.ac.in","iitm.ac.in","iitkgp.ac.in",
-  "iitg.ac.in","iitr.ac.in","iitmandi.ac.in","iitgn.ac.in","iith.ac.in",
+  "iitmandi.ac.in","iitb.ac.in","iitd.ac.in","iitk.ac.in","iitm.ac.in","iitkgp.ac.in",
+  "iitg.ac.in","iitr.ac.in","iitgn.ac.in","iith.ac.in",
   "iitj.ac.in","iitp.ac.in","iitrpr.ac.in","iiti.ac.in","iitbbs.ac.in",
   "iitbhilai.ac.in","iitgoa.ac.in","iitjammu.ac.in","iitdh.ac.in",
   "iitpkd.ac.in","iittp.ac.in","iitism.ac.in","iitbhu.ac.in"
@@ -52,7 +52,7 @@ const signup = async (req, res, next) => {
 // POST /auth/verify-otp
 const verifyOtp = async (req, res, next) => {
   try {
-    const { email: rawEmail, otp, name, course, branch, year, age } = req.body;
+    const { email: rawEmail, otp, name, college, course, branch, year, age } = req.body;
     const email = rawEmail.toLowerCase();
 
     const user = await User.findOne({ email });
@@ -72,6 +72,7 @@ const verifyOtp = async (req, res, next) => {
         await Profile.create({
           userId: user._id,
           name,
+          college,
           course,
           branch,
           year: Number(year),

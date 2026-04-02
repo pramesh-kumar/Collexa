@@ -5,11 +5,12 @@ import api from "../utils/api";
 import Navbar from "../components/Navbar";
 import StreamDropdown from "../components/StreamDropdown";
 import YearDropdown from "../components/YearDropdown";
+import InstituteDropdown from "../components/InstituteDropdown";
 
 const STREAMS = ["CSE","IT","AI","DSE","ECE","EEE","EE","ME","CE","CHE","VLSI","PED","EP","AE","BME","BT","MET","PHYSICS","CHEMISTRY","BIO","MATH"];
 
 const Profile = () => {
-  const [form, setForm] = useState({ name: "", age: "", course: "", branch: "", year: "", bio: "", interests: "" });
+  const [form, setForm] = useState({ name: "", age: "", college: "", course: "", branch: "", year: "", bio: "", interests: "" });
   const [photos, setPhotos] = useState([]);
   const [existing, setExisting] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -22,6 +23,7 @@ const Profile = () => {
         setForm({
           name: data.profile.name,
           age: data.profile.age,
+          college: data.profile.college || "",
           course: data.profile.course || "",
           branch: data.profile.branch,
           year: data.profile.year,
@@ -85,6 +87,7 @@ const Profile = () => {
             />
           ))}
 
+          <InstituteDropdown value={form.college} onChange={(v) => setForm({ ...form, college: v })} placeholder="Select Institute" required />
           <StreamDropdown value={form.branch} onChange={(v) => setForm({ ...form, branch: v })} placeholder="Select Stream" required />
           <YearDropdown value={form.year} onChange={(v) => setForm({ ...form, year: v })} required />
           <input
