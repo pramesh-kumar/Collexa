@@ -138,6 +138,7 @@ const Chat = () => {
   const [deletePopup, setDeletePopup] = useState(null);
   const [selected, setSelected] = useState(new Set());
   const [selectMode, setSelectMode] = useState(false);
+  const [pendingFile, setPendingFile] = useState(null); // { file, previewUrl, fileType }
   const bottomRef = useRef(null);
   const fileInputRef = useRef(null);
   const cameraInputRef = useRef(null);
@@ -311,7 +312,16 @@ const Chat = () => {
 
   const sendMessage = async (e) => {
     e.preventDefault();
-    if (!text.trim() || !socket) return;
+    if (!socket) return;
+
+    // If there's a pending file, upload it
+    if (pendingFile) {
+      await uploadFile(pendingFile.file);
+      setPendingFile(null);
+      return;
+    }
+
+    if (!text.trim()) return;
     const currentText = text;
     setText("");
     setShowEmoji(false);
@@ -330,10 +340,34 @@ const Chat = () => {
     }
   };
 
+  const stageFile = (file) => {
+    const fileType = file.type.startsWith("image/") ? "image" : file.type.startsWith("audio/") ? "audio" : "file";
+    const previewUrl = fileType === "image" ? URL.createObjectURL(file) : null;
+    setPendingFile({ file, previewUrl, fileType, name: file.name });
+  };
+
+  const compressImage = (file) => new Promise((resolve) => {
+    const img = new Image();
+    img.src = URL.createObjectURL(file);
+    img.onload = () => {
+      const MAX = 1280;
+      let { width, height } = img;
+      if (width > MAX || height > MAX) {
+        if (width > height) { height = Math.round(height * MAX / width); width = MAX; }
+        else { width = Math.round(width * MAX / height); height = MAX; }
+      }
+      const canvas = document.createElement("canvas");
+      canvas.width = width; canvas.height = height;
+      canvas.getContext("2d").drawImage(img, 0, 0, width, height);
+      canvas.toBlob((blob) => resolve(new File([blob], file.name, { type: "image/jpeg" })), "image/jpeg", 0.75);
+    };
+  });
+
   const uploadFile = async (file) => {
     try {
+      const toUpload = file.type.startsWith("image/") ? await compressImage(file) : file;
       const fd = new FormData();
-      fd.append("file", file);
+      fd.append("file", toUpload);
       const { data } = await api.post(`/chat/${receiverId}/upload`, fd);
       setMessages((prev) => [...prev, data.message]);
     } catch {
@@ -356,7 +390,7 @@ const Chat = () => {
         const blob = new Blob(audioChunksRef.current, { type: "audio/webm" });
         const file = new File([blob], "voice.webm", { type: "audio/webm" });
         stream.getTracks().forEach((t) => t.stop());
-        await uploadFile(file);
+        stageFile(file);
       };
       recorder.start();
       mediaRecorderRef.current = recorder;
@@ -458,6 +492,23 @@ const Chat = () => {
           </div>
         )}
 
+        {/* Pending file preview */}
+        {pendingFile && (
+          <div className="shrink-0 flex items-center gap-3 bg-white border border-rose-200 rounded-2xl px-3 py-2 shadow-sm">
+            {pendingFile.fileType === "image" && (
+              <img src={pendingFile.previewUrl} className="w-12 h-12 rounded-xl object-cover" />
+            )}
+            {pendingFile.fileType === "audio" && (
+              <audio controls src={URL.createObjectURL(pendingFile.file)} className="h-8 max-w-[200px]" />
+            )}
+            {pendingFile.fileType === "file" && (
+              <span className="text-sm text-gray-600 truncate max-w-[200px]">📎 {pendingFile.name}</span>
+            )}
+            <button type="button" onClick={() => setPendingFile(null)}
+              className="ml-auto text-gray-400 hover:text-red-500 text-lg leading-none">✕</button>
+          </div>
+        )}
+
         {/* Sticky input bar */}
         <form onSubmit={sendMessage} className="shrink-0 flex items-center bg-white border border-gray-200 rounded-2xl px-2 py-2 shadow-sm">
           <button type="button" onClick={() => setShowEmoji((s) => !s)}
@@ -478,7 +529,7 @@ const Chat = () => {
               </svg>
             </button>
             <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" className="hidden"
-              onChange={(e) => e.target.files[0] && uploadFile(e.target.files[0])} />
+              onChange={(e) => e.target.files[0] && stageFile(e.target.files[0])} />
 
             <button type="button" onClick={() => fileInputRef.current.click()}
               className="p-1.5 text-gray-400 hover:text-rose-400 transition" title="Attach file">
@@ -487,7 +538,7 @@ const Chat = () => {
               </svg>
             </button>
             <input ref={fileInputRef} type="file" className="hidden"
-              onChange={(e) => e.target.files[0] && uploadFile(e.target.files[0])} />
+              onChange={(e) => e.target.files[0] && stageFile(e.target.files[0])} />
 
             <button type="button" onClick={toggleRecording}
               className={`p-1.5 transition ${recording ? "text-red-500 animate-pulse" : "text-gray-400 hover:text-rose-400"}`}
