@@ -17,4 +17,4 @@ const sendOTP = async (to, otp) => {
   });
 };
 
-module.exports = { sendOTP };
+module.exports = { sendOTP, transporter };

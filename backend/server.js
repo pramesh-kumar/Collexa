@@ -33,6 +33,7 @@ app.use("/users", require("./routes/userRoutes"));
 app.use("/swipe", require("./routes/swipeRoutes"));
 app.use("/matches", require("./routes/matchRoutes"));
 app.use("/chat", require("./routes/chatRoutes"));
+app.use("/feedback", require("./routes/feedbackRoutes"));
 
 // Error handler
 app.use(errorHandler);

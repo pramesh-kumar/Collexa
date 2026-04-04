@@ -69,7 +69,24 @@ const Profile = () => {
         {existing?.profilePhotos?.length > 0 && (
           <div className="flex gap-2 mb-4 flex-wrap">
             {existing.profilePhotos.map((url, i) => (
-              <img key={i} src={url} className="w-20 h-20 rounded-xl object-cover" alt="photo" />
+              <div key={i} className="relative">
+                <img src={url} className="w-20 h-20 rounded-xl object-cover" alt="photo" />
+                <button
+                  type="button"
+                  onClick={async () => {
+                    try {
+                      const { data } = await api.delete("/profile/photo", { data: { url } });
+                      setExisting(data.profile);
+                      toast.success("Photo removed");
+                    } catch {
+                      toast.error("Failed to remove photo");
+                    }
+                  }}
+                  className="absolute -top-1.5 -right-1.5 bg-red-500 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center shadow hover:bg-red-600"
+                >
+                  ✕
+                </button>
+              </div>
             ))}
           </div>
         )}

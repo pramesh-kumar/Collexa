@@ -1,5 +1,7 @@
 const Profile = require("../models/Profile");
 const { uploadToS3 } = require("../middleware/upload");
+const { DeleteObjectCommand } = require("@aws-sdk/client-s3");
+const s3 = require("../config/s3");
 
 // POST /profile/create
 const createProfile = async (req, res, next) => {
@@ -60,4 +62,25 @@ const updateProfile = async (req, res, next) => {
   }
 };
 
-module.exports = { createProfile, getMyProfile, updateProfile };
+// DELETE /profile/photo
+const deletePhoto = async (req, res, next) => {
+  try {
+    const { url } = req.body;
+    if (!url) return res.status(400).json({ success: false, message: "URL required" });
+
+    const key = url.split(".amazonaws.com/")[1];
+    if (key) await s3.send(new DeleteObjectCommand({ Bucket: process.env.S3_BUCKET_NAME, Key: key }));
+
+    const profile = await Profile.findOneAndUpdate(
+      { userId: req.userId },
+      { $pull: { profilePhotos: url } },
+      { new: true }
+    );
+
+    res.json({ success: true, profile });
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = { createProfile, getMyProfile, updateProfile, deletePhoto };
