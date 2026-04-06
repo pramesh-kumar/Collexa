@@ -161,8 +161,7 @@ const forgotPassword = async (req, res, next) => {
     user.otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
     await user.save();
 
-    await sendOTP(email, otp);
-    if (process.env.NODE_ENV === "development") console.log(`🔑 DEV Reset OTP for ${email}: ${otp}`);
+    await sendOTP(email, otp, "reset");
     res.json({ success: true, message: "OTP sent to your email" });
   } catch (err) { next(err); }
 };
