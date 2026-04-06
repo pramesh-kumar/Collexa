@@ -1,6 +1,6 @@
 const multer = require("multer");
 const { PutObjectCommand } = require("@aws-sdk/client-s3");
-const s3 = require("../config/s3");
+const { s3 } = require("../config/s3");
 const { v4: uuidv4 } = require("crypto").webcrypto ? 
   { v4: () => require("crypto").randomUUID() } : 
   require("crypto");

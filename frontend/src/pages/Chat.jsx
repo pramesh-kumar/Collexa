@@ -496,12 +496,30 @@ const Chat = () => {
               className="max-w-full max-h-[80vh] rounded-2xl shadow-2xl object-contain"
               onClick={(e) => e.stopPropagation()} />
             <div className="flex gap-3 mt-5" onClick={(e) => e.stopPropagation()}>
-              <a href={lightboxImg} download target="_blank" rel="noreferrer"
-                className="flex items-center justify-center w-11 h-11 bg-white text-gray-800 rounded-full hover:bg-gray-100 transition shadow">
+              <button
+                className="flex items-center justify-center w-11 h-11 bg-white text-gray-800 rounded-full hover:bg-gray-100 transition shadow"
+                onClick={async (e) => {
+                  e.stopPropagation();
+                  try {
+                    const key = new URL(lightboxImg).pathname.slice(1);
+                    const token = localStorage.getItem("token");
+                    const res = await fetch(`/api/chat/download?key=${encodeURIComponent(key)}`, {
+                      headers: { Authorization: `Bearer ${token}` },
+                    });
+                    if (!res.ok) throw new Error();
+                    const blob = await res.blob();
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = key.split("/").pop();
+                    a.click();
+                    URL.revokeObjectURL(url);
+                  } catch { toast.error("Download failed"); }
+                }}>
                 <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3" />
                 </svg>
-              </a>
+              </button>
               <button onClick={() => setLightboxImg(null)}
                 className="flex items-center justify-center w-11 h-11 bg-white/10 text-white rounded-full hover:bg-white/20 transition">
                 <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

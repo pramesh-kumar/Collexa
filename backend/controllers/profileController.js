@@ -1,7 +1,7 @@
 const Profile = require("../models/Profile");
 const { uploadToS3 } = require("../middleware/upload");
 const { DeleteObjectCommand } = require("@aws-sdk/client-s3");
-const s3 = require("../config/s3");
+const { s3 } = require("../config/s3");
 
 // POST /profile/create
 const createProfile = async (req, res, next) => {

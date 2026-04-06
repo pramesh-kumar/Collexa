@@ -1,6 +1,7 @@
 const Message = require("../models/Message");
 const Match = require("../models/Match");
 const { uploadChatFileToS3 } = require("../middleware/upload");
+const { s3, GetObjectCommand } = require("../config/s3");
 
 const isMatched = async (userId, targetId) => {
   return Match.findOne({
@@ -101,4 +102,23 @@ const getUnreadCounts = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
-module.exports = { getChatHistory, uploadChatFile, clearChat, isMatched, getUnreadCounts };
+// GET /chat/download?key=chat/filename.jpg
+const downloadChatFile = async (req, res, next) => {
+  try {
+    const { key } = req.query;
+    if (!key) return res.status(400).json({ message: "Missing key" });
+
+    const command = new GetObjectCommand({
+      Bucket: process.env.S3_BUCKET_NAME,
+      Key: key,
+    });
+    const { Body, ContentType, ContentLength } = await s3.send(command);
+    const filename = key.split("/").pop();
+    res.setHeader("Content-Type", ContentType || "application/octet-stream");
+    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+    if (ContentLength) res.setHeader("Content-Length", ContentLength);
+    Body.pipe(res);
+  } catch (err) { next(err); }
+};
+
+module.exports = { getChatHistory, uploadChatFile, clearChat, isMatched, getUnreadCounts, downloadChatFile };
