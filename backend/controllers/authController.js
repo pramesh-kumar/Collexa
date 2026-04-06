@@ -10,7 +10,7 @@ const { sendOTP } = require("../config/mailer");
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
 
 const validIITDomains = [
-  "iitmandi.ac.in","iitb.ac.in","iitd.ac.in","iitk.ac.in","iitm.ac.in","iitkgp.ac.in",
+  "iitmandi.ac.in","iitb.ac.in","iitd.ac.in","iitk.ac.in","iitm.ac.in","iitkgp.ac.in","kgpian.iitkgp.ac.in",
   "iitg.ac.in","iitr.ac.in","iitgn.ac.in","iith.ac.in",
   "iitj.ac.in","iitp.ac.in","iitrpr.ac.in","iiti.ac.in","iitbbs.ac.in",
   "iitbhilai.ac.in","iitgoa.ac.in","iitjammu.ac.in","iitdh.ac.in",
