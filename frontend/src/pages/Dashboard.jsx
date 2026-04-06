@@ -38,7 +38,7 @@ const Dashboard = () => {
     if (!current) return;
     try {
       const { data } = await api.post("/swipe", { targetUserId: current.userId, action });
-      if (data.matched) toast.success("🎉 It's a match!");
+      if (data.matched) toast.success("🎉 It's a match!", { duration: 2000 });
       setUsers((prev) => prev.slice(0, -1));
     } catch {
       toast.error("Swipe failed");
