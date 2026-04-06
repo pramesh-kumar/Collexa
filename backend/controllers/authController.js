@@ -52,7 +52,7 @@ const signup = async (req, res, next) => {
 // POST /auth/verify-otp
 const verifyOtp = async (req, res, next) => {
   try {
-    const { email: rawEmail, otp, name, college, course, branch, year, age } = req.body;
+    const { email: rawEmail, otp, name, college, course, branch, year, age, gender } = req.body;
     const email = rawEmail.toLowerCase();
 
     const user = await User.findOne({ email });
@@ -71,14 +71,11 @@ const verifyOtp = async (req, res, next) => {
       if (!existing) {
         await Profile.create({
           userId: user._id,
-          name,
-          college,
-          course,
-          branch,
+          name, college, course, branch,
           year: Number(year),
           age: age ? Number(age) : 18,
-          bio: "",
-          interests: [],
+          gender: gender || "",
+          bio: "", interests: [],
         });
       }
     }

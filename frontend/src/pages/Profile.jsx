@@ -111,7 +111,10 @@ const Profile = () => {
             {/* Name + age */}
             <div>
               <h2 className="text-2xl font-bold text-gray-800">{profile.name}, {profile.age}</h2>
-              <p className="text-rose-500 font-medium text-sm mt-0.5">{profile.college} • {profile.branch}</p>
+              <p className="text-rose-500 font-medium text-sm mt-0.5">
+                {profile.college} • {profile.branch}
+                {profile.gender === "Male" ? <span className="ml-1">• M</span> : profile.gender === "Female" ? <span className="ml-1">• F</span> : ""}
+              </p>
               <p className="text-gray-400 text-sm">{profile.course} • Year {profile.year}</p>
             </div>
 

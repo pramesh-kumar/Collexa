@@ -1,15 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 
-const INSTITUTES = [
-  "IIT Mandi",
-  "IIT Bombay","IIT Delhi","IIT Kanpur","IIT Madras","IIT Kharagpur",
-  "IIT Guwahati","IIT Roorkee","IIT Gandhinagar","IIT Hyderabad",
-  "IIT Jodhpur","IIT Patna","IIT Ropar","IIT Indore","IIT Bhubaneswar",
-  "IIT Bhilai","IIT Goa","IIT Jammu","IIT Dharwad","IIT Palakkad",
-  "IIT Tirupati","IIT (ISM) Dhanbad","IIT BHU Varanasi"
-];
+const GENDERS = ["Male", "Female", "Others"];
 
-const InstituteDropdown = ({ value, onChange, placeholder = "Institute", required = false }) => {
+const GenderDropdown = ({ value, onChange, placeholder = "Gender", required = false }) => {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
@@ -26,26 +19,26 @@ const InstituteDropdown = ({ value, onChange, placeholder = "Institute", require
         onClick={() => setOpen((s) => !s)}
         className="w-full border border-gray-200 rounded-xl px-4 py-3 text-left text-sm focus:outline-none focus:ring-2 focus:ring-rose-300 flex items-center justify-between text-gray-700"
       >
-        <span className={`truncate ${value ? "text-gray-700" : "text-gray-400"}`}>{value || placeholder}</span>
+        <span className={value ? "text-gray-700" : "text-gray-400"}>{value || placeholder}</span>
         <svg xmlns="http://www.w3.org/2000/svg" className={`w-4 h-4 text-gray-400 transition-transform ${open ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
         </svg>
       </button>
       {open && (
-        <div className="absolute z-20 w-full bg-white border border-gray-200 rounded-xl shadow-lg mt-1 max-h-48 overflow-y-auto">
+        <div className="absolute z-20 w-full bg-white border border-gray-200 rounded-xl shadow-lg mt-1 overflow-hidden">
           {!required && (
             <button type="button" onClick={() => { onChange(""); setOpen(false); }}
               className="w-full text-left px-4 py-2 text-sm text-gray-400 hover:bg-rose-50">
               {placeholder}
             </button>
           )}
-          {INSTITUTES.map((inst) => (
-            <button key={inst} type="button"
-              onClick={() => { onChange(inst); setOpen(false); }}
+          {GENDERS.map((g) => (
+            <button key={g} type="button"
+              onClick={() => { onChange(g); setOpen(false); }}
               className={`w-full text-left px-4 py-2 text-sm hover:bg-rose-50 hover:text-rose-500 ${
-                value === inst ? "text-rose-500 font-semibold bg-rose-50" : "text-gray-700"
+                value === g ? "text-rose-500 font-semibold bg-rose-50" : "text-gray-700"
               }`}>
-              {inst}
+              {g}
             </button>
           ))}
         </div>
@@ -54,5 +47,4 @@ const InstituteDropdown = ({ value, onChange, placeholder = "Institute", require
   );
 };
 
-export { INSTITUTES };
-export default InstituteDropdown;
+export default GenderDropdown;

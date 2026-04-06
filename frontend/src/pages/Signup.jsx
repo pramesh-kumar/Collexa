@@ -5,6 +5,7 @@ import api from "../utils/api";
 import StreamDropdown from "../components/StreamDropdown";
 import YearDropdown from "../components/YearDropdown";
 import InstituteDropdown from "../components/InstituteDropdown";
+import GenderDropdown from "../components/GenderDropdown";
 import OtpInput from "../components/OtpInput";
 
 const EyeIcon = ({ open }) => open ? (
@@ -22,7 +23,7 @@ const inputCls = "w-full bg-white/80 border border-gray-200 rounded-xl px-4 py-3
 
 const Signup = () => {
   const [step, setStep] = useState(1);
-  const [form, setForm] = useState({ email: "", password: "", name: "", college: "", course: "", branch: "", year: "", age: "" });
+  const [form, setForm] = useState({ email: "", password: "", name: "", college: "", course: "", branch: "", year: "", age: "", gender: "" });
   const [showPass, setShowPass] = useState(false);
   const [otp, setOtp] = useState("");
   const [agreed, setAgreed] = useState(false);
@@ -54,7 +55,7 @@ const Signup = () => {
     try {
       await api.post("/auth/verify-otp", {
         email: form.email, otp,
-        name: form.name, college: form.college, course: form.course, branch: form.branch, year: form.year, age: form.age,
+        name: form.name, college: form.college, course: form.course, branch: form.branch, year: form.year, age: form.age, gender: form.gender,
       });
       toast.success("Email verified! Please login. 🎉");
       navigate("/login");
@@ -122,6 +123,9 @@ const Signup = () => {
                 <input type="number" placeholder="Age" min={16} max={40} required
                   className={`flex-1 ${inputCls}`}
                   value={form.age} onChange={(e) => set("age", e.target.value)} />
+                <div className="flex-1">
+                  <GenderDropdown value={form.gender} onChange={(v) => set("gender", v)} required />
+                </div>
               </div>
 
               <div className="flex items-start gap-2 pt-1">

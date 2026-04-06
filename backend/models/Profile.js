@@ -8,6 +8,7 @@ const profileSchema = new mongoose.Schema({
   course: { type: String, default: "" },
   branch: { type: String, required: true },
   year: { type: Number, required: true },
+  gender: { type: String, default: "" },
   bio: { type: String, default: "" },
   interests: [{ type: String }],
   profilePhotos: [{ type: String }],
