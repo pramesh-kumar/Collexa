@@ -7,6 +7,7 @@ import Footer from "./components/Footer";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Profile from "./pages/Profile";
+import EditProfile from "./pages/EditProfile";
 import Dashboard from "./pages/Dashboard";
 import Matches from "./pages/Matches";
 import Chat from "./pages/Chat";
@@ -28,6 +29,7 @@ const AppContent = () => {
         <Route path="/signup" element={<Signup />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+        <Route path="/profile/edit" element={<ProtectedRoute><EditProfile /></ProtectedRoute>} />
         <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
         <Route path="/matches" element={<ProtectedRoute><Matches /></ProtectedRoute>} />
         <Route path="/chat/:userId" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
