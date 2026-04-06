@@ -38,7 +38,7 @@ const Ticks = ({ msg, myId }) => {
   );
 };
 
-const MessageBubble = ({ msg, myId, onTap, onLongPress, selected, selectMode }) => {
+const MessageBubble = ({ msg, myId, onTap, onLongPress, selected, selectMode, onImageClick }) => {
   const isMe = msg.senderId === myId || msg.senderId?._id === myId;
   const isDeletedForAll = msg.deletedFor?.length >= 2;
   const wrapperClass = `flex items-center gap-2 ${isMe ? "justify-end" : "justify-start"}`;
@@ -72,7 +72,8 @@ const MessageBubble = ({ msg, myId, onTap, onLongPress, selected, selectMode }) 
     content = (
       <img src={msg.fileUrl} alt="img"
         className={`max-w-[220px] rounded-2xl shadow cursor-pointer ${selected ? "opacity-60 ring-2 ring-rose-400" : ""}`}
-        onClick={handleClick} onContextMenu={handleContextMenu}
+        onClick={(e) => { e.stopPropagation(); selectMode ? onTap(msg) : onImageClick(msg.fileUrl); }}
+        onContextMenu={handleContextMenu}
         onTouchStart={startTouch} onTouchEnd={cancelTouch} />
     );
   } else if (msg.type === "audio") {
@@ -138,7 +139,8 @@ const Chat = () => {
   const [deletePopup, setDeletePopup] = useState(null);
   const [selected, setSelected] = useState(new Set());
   const [selectMode, setSelectMode] = useState(false);
-  const [pendingFile, setPendingFile] = useState(null); // { file, previewUrl, fileType }
+  const [pendingFile, setPendingFile] = useState(null);
+  const [lightboxImg, setLightboxImg] = useState(null);
   const bottomRef = useRef(null);
   const fileInputRef = useRef(null);
   const cameraInputRef = useRef(null);
@@ -479,11 +481,36 @@ const Chat = () => {
                 onLongPress={handleLongPress}
                 selected={selected.has(msg._id)}
                 selectMode={selectMode}
+                onImageClick={setLightboxImg}
               />
             </div>
           ))}
           <div ref={bottomRef} />
         </div>
+
+        {/* Image Lightbox */}
+        {lightboxImg && (
+          <div className="fixed inset-0 z-50 bg-black/90 flex flex-col items-center justify-center"
+            onClick={() => setLightboxImg(null)}>
+            <img src={lightboxImg} alt="preview"
+              className="max-w-full max-h-[80vh] rounded-2xl shadow-2xl object-contain"
+              onClick={(e) => e.stopPropagation()} />
+            <div className="flex gap-3 mt-5" onClick={(e) => e.stopPropagation()}>
+              <a href={lightboxImg} download target="_blank" rel="noreferrer"
+                className="flex items-center justify-center w-11 h-11 bg-white text-gray-800 rounded-full hover:bg-gray-100 transition shadow">
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3" />
+                </svg>
+              </a>
+              <button onClick={() => setLightboxImg(null)}
+                className="flex items-center justify-center w-11 h-11 bg-white/10 text-white rounded-full hover:bg-white/20 transition">
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Emoji Picker */}
         {showEmoji && (
