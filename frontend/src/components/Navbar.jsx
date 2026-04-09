@@ -103,12 +103,12 @@ const Navbar = () => {
                 <Link to="/feedback" onClick={() => setOpen(false)} className={menuItemClass}>
                   Feedback 💬
                 </Link>
-                <button
+                {/* <button
                   onClick={() => { setOpen(false); handleDeleteAccount(); }}
                   className="w-full text-left px-4 py-3 text-sm font-medium text-red-500 hover:text-red-600"
                 >
                   Delete Account
-                </button>
+                </button> */}
               </div>
             </>
           )}
@@ -146,12 +146,12 @@ const Navbar = () => {
               >
                 Logout
               </button>
-              <button
+              {/* <button
                 onClick={() => { setOpen(false); handleDeleteAccount(); }}
                 className="w-full text-left px-4 py-3 text-sm font-medium text-red-500 hover:text-red-600"
               >
                 Delete Account
-              </button>
+              </button> */}
             </div>
           </>
         )}
