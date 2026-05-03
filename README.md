@@ -1,6 +1,6 @@
 # 💘 Collexa
 
-A campus dating app exclusively for IIT Mandi students.  
+A campus dating app exclusively for IITs students.  
 🌐 Live: https://collexa.online  
 
 ---
